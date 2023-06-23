@@ -136,7 +136,7 @@ done
 
 USER_FILE_PATH=$ARG_CHARTMAN_UI_DATA/persistence/users.json
 if test -f "$USER_FILE_PATH"; then
-  "Users exist"
+  echo "Users file exist"
 else
   echo "File with users doesn't exist $USER_FILE_PATH"
   if [[ "$ARG_CHARTMAN_UI_USER" == '' ]]; then
