@@ -33,7 +33,7 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "Parameters:"
   echo ""
   echo "  --Domain              | Name for current network domain for deployment"
-  echo "                        | [REQUIRED]. Example 'domain.com'"
+  echo "                        | Default: '' (empty)"
   echo "  --StackName           | Name for the default deployment stack."
   echo "                        | Default: 'SXS-MAIN-STACK'"
   echo "  --ServiceName         | Name for the default deployment service."
@@ -173,13 +173,6 @@ if [[ $ARG_DOCKER_REGISTRY_URL == '' ]]; then
   if [[ $ARG_DOCKER_REGISTRY_URL == '' ]]; then
     echo "Docker registry cannot be empty"
     exit
-  fi
-fi
-
-if [[ $ARG_DOMAIN == '' ]]; then
-  read -p "Provide current network domain: " ARG_DOMAIN
-  if [[ $ARG_DOMAIN == '' ]]; then
-    echo "Domain cannot be empty"
   fi
 fi
 
