@@ -198,8 +198,6 @@ if [[ $ARG_DOCKER_REGISTRY_PASSWORD == '' ]]; then
   fi
 fi
 
-ARG_CHARTMAN_UI_IMAGE="${ARG_DOCKER_REGISTRY_URL}/${ARG_CHARTMAN_UI_IMAGE}"
-
 echo "Starting Chartman UI with parameters:"
 echo ""
 echo "Domain:                 ${ARG_DOMAIN}"
@@ -335,19 +333,21 @@ sleep 1
 
 runChartmanOperatorCommand () {
   COMMON_ARGS="-e DOCKER_REGISTRY=$ARG_DOCKER_REGISTRY_URL \
-             -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
-             -e DOCKER_PW=$ARG_DOCKER_REGISTRY_PASSWORD \
-             -v "${ARG_MAIN_STACK_DIR}":"${ARG_MAIN_STACK_DIR}" \
-             -v "${HOME}/.chartman":"/app/data/.chartman" \
-             -v "/var/run/docker.sock":"/var/run/docker.sock" \
-             -v "${ARG_CHARTMAN_UI_DATA}/persistence":"/chartman-operator/data" \
-             -v "${ARG_CHARTMAN_UI_DATA}/settings/config.json":"/wwwroot/config.json" \
-             $ARG_CHARTMAN_UI_IMAGE:$ARG_CHARTMAN_UI_IMAGE_TAG"
+    -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
+    -e DOCKER_PW=$ARG_DOCKER_REGISTRY_PASSWORD \
+    -v "${ARG_MAIN_STACK_DIR}":"${ARG_MAIN_STACK_DIR}" \
+    -v "${HOME}/.chartman":"/app/data/.chartman" \
+    -v "/var/run/docker.sock":"/var/run/docker.sock" \
+    -v "${ARG_CHARTMAN_UI_DATA}/persistence":"/chartman-operator/data" \
+    -v "${ARG_CHARTMAN_UI_DATA}/settings/config.json":"/wwwroot/config.json" \
+    $ARG_CHARTMAN_UI_IMAGE:$ARG_CHARTMAN_UI_IMAGE_TAG"
+  
   if [ $1  == "set-user" ]; then
     ARGS="--rm $COMMON_ARGS set-user -u $ARG_CHARTMAN_UI_USER -p $ARG_CHARTMAN_UI_PASSWORD"
   elif [ $1 == "server" ]; then
     ARGS="-d --name $ARG_CHARTMAN_UI_CONTAINER -p $ARG_CHARTMAN_UI_PORT:80 $COMMON_ARGS server"
   fi
+
   docker run $ARGS
 }
 
@@ -372,4 +372,5 @@ docker rm -f $ARG_CHARTMAN_UI_CONTAINER > /dev/null 2>&1
 if [[ "$ARG_CHARTMAN_UI_USER" != "" ]]; then
   runChartmanOperatorCommand "set-user"
 fi
+
 runChartmanOperatorCommand "server"
