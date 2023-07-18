@@ -354,7 +354,7 @@ docker login $ARG_DOCKER_REGISTRY_URL -u $ARG_DOCKER_REGISTRY_USER -p $ARG_DOCKE
 
 echo "Pulling docker images"
 sleep 1
-docker pull $ARG_CHARTMAN_UI_IMAGE:$ARG_CHARTMAN_UI_IMAGE_TAG
+docker pull $ARG_DOCKER_REGISTRY_URL/$ARG_CHARTMAN_UI_IMAGE:$ARG_CHARTMAN_UI_IMAGE_TAG
 
 echo "Starting docker container for Chartman UI"
 sleep 1
