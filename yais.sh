@@ -4,6 +4,7 @@ ARG_DOCKER_REGISTRY_URL=''
 ARG_DOCKER_REGISTRY_USER=''
 ARG_DOCKER_REGISTRY_PASSWORD=''
 
+ARG_DOMAIN=''
 ARG_MAIN_STACK_NAME='SXS_MAIN_SERVICE'
 ARG_MAIN_STACK_NETWORK='gccp'
 ARG_MAIN_STACK_DIR='/mhi'
@@ -31,6 +32,8 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "install-script.sh --param1 value1 --param2 value2 ..."
   echo "Parameters:"
   echo ""
+  echo "  --Domain              | Name for current network domain for deployment"
+  echo "                        | Default: '' (empty)"
   echo "  --StackName           | Name for the default deployment stack."
   echo "                        | Default: 'SXS-MAIN-STACK'"
   echo "  --ServiceName         | Name for the default deployment service."
@@ -83,7 +86,9 @@ do
     keyName=${arg,,}
     isKey=0
   else
-    if [[ $keyName == '--stackname' ]]; then
+    if [[ $keyName == '--domain' ]]; then
+      ARG_DOMAIN="${arg}"
+    elif [[ $keyName == '--stackname' ]]; then
       ARG_MAIN_STACK_NAME="${arg}"
     elif [[ $keyName == '--servicename' ]]; then
       ARG_MAIN_SERVICE_NAME="${arg}"
@@ -188,6 +193,7 @@ fi
 
 echo "Starting Chartman UI with parameters:"
 echo ""
+echo "Domain:                 ${ARG_DOMAIN}"
 echo "Main Stack Name:        ${ARG_MAIN_STACK_NAME}"
 echo "Main Stack Directory:   ${ARG_MAIN_STACK_DIR}"
 echo "Main Stack Network:     ${ARG_MAIN_STACK_NETWORK}"
@@ -300,7 +306,13 @@ if [[ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]]; then
   cp "${ARG_CHARTMAN_UI_DATA}/settings/config.json" "${ARG_CHARTMAN_UI_DATA}/settings/${backup_file}"
 fi
 
-config_hostname=""
+if [ -z "$ARG_DOMAIN" ]
+then
+  config_hostname = ''
+else
+  config_hostname="${HOSTNAME%%.*}.${ARG_DOMAIN}"
+fi
+
 config_template="{
   \"Hostname\": \"${config_hostname}\",
   \"Port\": ${ARG_CHARTMAN_UI_PORT},
