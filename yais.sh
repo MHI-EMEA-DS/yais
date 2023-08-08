@@ -306,12 +306,7 @@ if [[ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]]; then
   cp "${ARG_CHARTMAN_UI_DATA}/settings/config.json" "${ARG_CHARTMAN_UI_DATA}/settings/${backup_file}"
 fi
 
-if [ -z "$ARG_DOMAIN" ]
-then
-  config_hostname = ''
-else
-  config_hostname="${HOSTNAME%%.*}.${ARG_DOMAIN}"
-fi
+[[ -z "$ARG_DOMAIN" ]] && config_hostname='' || config_hostname="${HOSTNAME%%.*}.${ARG_DOMAIN}"
 
 config_template="{
   \"Hostname\": \"${config_hostname}\",
