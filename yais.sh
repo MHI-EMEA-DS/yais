@@ -18,6 +18,7 @@ ARG_CHARTMAN_UI_DATA='/chartman-ui'
 ARG_CHARTMAN_UI_CONTAINER='chartman_docker_operator_ui'
 ARG_CHARTMAN_UI_IMAGE='chartman/docker-operator-ui'
 ARG_CHARTMAN_UI_IMAGE_TAG=''
+ARG_VALUES_JSON_FILE=''
 
 current_time=$(date +"%Y-%m-%dT%H:%M:%S")
 stack_id=$(uuidgen)
@@ -66,6 +67,8 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "                        | [Required]"
   echo "  --ChartmanUiData      | Directory name to store all Chartman Docker Operator UI related data"
   echo "                        | Default: '/chartman-operator'"
+  echo "  --ValuesFile          | Path to file containing default values.json for deployment"
+  echo "                        | Default: '' (empty)"
   echo "  --help                | Display help"
   exit
 fi
@@ -246,12 +249,63 @@ fi
 echo "Checking ${ARG_MAIN_STACK_DIR} directory"
 sleep 1
 
+# ----------------------
+# Init chartman function
+# ----------------------
+
+initializeChartman () {
+  if [ ! -d "$1" ]; then
+    echo "Creating $1 directory"
+    mkdir -p $1
+  fi
+  if [ ! -d "${1}/.chartman" ]; then
+    current_dir=$PWD
+    cd $1
+
+    echo "Chartman project is not yet initialized."
+    echo "Performing 'chartman init ${ARG_MAIN_SERVICE_CHART}' in ${1} directory"
+    chartman init $ARG_MAIN_SERVICE_CHART
+    cd $current_dir
+  fi
+}
+
+# ------------------------------------
+# Create necessary service directories
+# ------------------------------------
+
+valuesContent="{}"
+
 if [[ "${ARG_MAIN_SERVICE_DIR}" == "${ARG_MAIN_STACK_DIR}"* ]]; then
   echo "Stack directory and service directory are valid"
-  if [ ! -d "${ARG_MAIN_SERVICE_NAME}" ]; then
+  if [ ! -d "${ARG_MAIN_SERVICE_DIR}" ]; then
     echo "Stack or service directory are missing. Creating..."
-    mkdir -p "${ARG_MAIN_SERVICE_NAME}"
+    mkdir -p "${ARG_MAIN_SERVICE_DIR}"
+    initializeChartman "${ARG_MAIN_SERVICE_DIR}"
   fi
+  if [ ! -f "${ARG_MAIN_SERVICE_DIR}/values.json" ]; then
+    echo "values.json file was not found in ${ARG_MAIN_SERVICE_DIR}."
+    if [[ $ARG_VALUES_JSON_FILE == '' ]]; then
+      echo "values.json file was not provided in the script."
+      echo "Skipping values.json initialization"
+    else
+      if [ ! -f "${ARG_VALUES_JSON_FILE}" ]; then
+        echo "Provided path to values.json file is not valid. File not found".
+        echo "Provide correct file path or skip the parameter"
+        exit
+      fi
+      echo "values.json file was provided. Initializing..."
+      cp $ARG_VALUES_JSON_FILE "${ARG_MAIN_SERVICE_DIR}/values.json"
+      valuesContent=$(cat "${ARG_VALUES_JSON_FILE}")
+    fi
+  else
+    valuesContent=$(cat "${ARG_MAIN_SERVICE_DIR}/values.json")
+  fi
+
+  # replace all occurences of " (double-quote) to '\u0022'
+  # persistence file is a json that includes another nested json
+  # as a value for values.json - we need to replace '"' to '\u022'
+  # to ensure value of default values.json is read correctly 
+  valuesContent=$(echo $valuesContent | sed 's/"/\\u0022/g')
 else
   echo "Wrong service directory. Must start in the same directory as main stack: ${ARG_MAIN_STACK_DIR}"
   exit
@@ -279,6 +333,7 @@ if [ ! -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]; then
           \"Name\": \"${ARG_MAIN_SERVICE_NAME}\",
           \"WorkingDir\": \"${ARG_MAIN_SERVICE_DIR}\",
           \"Chart\": \"${ARG_MAIN_SERVICE_CHART}\",
+          \"Values\": \"${valuesContent}\",
           \"CreatedAt\": \"${current_time}\",
           \"UpdatedAt\": \"${current_time}\"
         }
