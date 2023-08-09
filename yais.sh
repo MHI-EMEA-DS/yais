@@ -298,7 +298,14 @@ if [[ "${ARG_MAIN_SERVICE_DIR}" == "${ARG_MAIN_STACK_DIR}"* ]]; then
       valuesContent=$(cat "${ARG_VALUES_JSON_FILE}")
     fi
   else
-    valuesContent=$(cat "${ARG_MAIN_SERVICE_DIR}/values.json")
+    if [ ! -f "${ARG_VALUES_JSON_FILE}" ]; then
+      valuesContent=$(cat "${ARG_MAIN_SERVICE_DIR}/values.json")
+    else
+      echo "Values.Json file has been provided but existing values.json was found. Creating backup file..."
+      valuesContent=$(cat "${ARG_VALUES_JSON_FILE}")
+      backup_time=$(date +"%Y%m%d%H%M%S")
+      cp "${ARG_MAIN_SERVICE_DIR}/values.json" "${ARG_MAIN_SERVICE_DIR}/backup_${backup_time}_values.json"
+      cp "${ARG_VALUES_JSON_FILE}" "${ARG_MAIN_SERVICE_DIR}/values.json"
   fi
 
   # replace all occurences of " (double-quote) to '\u0022'
