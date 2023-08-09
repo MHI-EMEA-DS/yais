@@ -123,6 +123,8 @@ do
       ARG_CHARTMAN_UI_IMAGE="${arg}"
     elif [[ $keyName == '--chartmanuiimagetag' ]]; then
       ARG_CHARTMAN_UI_IMAGE_TAG="${arg}"
+    elif [[ $keyName == '--valuesfile' ]]; then
+      ARG_VALUES_JSON_FILE="${arg}"
     else
       echo "Unknown parameter provided: ${keyName}"
       exit
