@@ -215,6 +215,9 @@ echo "GUI Data Directory:     ${ARG_CHARTMAN_UI_DATA}"
 echo "Docker Registry:        ${ARG_DOCKER_REGISTRY_URL}"
 echo "Docker registry user:   ${ARG_DOCKER_REGISTRY_USER}"
 echo "Docker registry token:  ***********"
+if [[ $ARG_MAIN_SERVICE_DIR != '' ]]; then
+  echo "Values file:            ${ARG_VALUES_JSON_FILE}"
+fi
 echo ""
 sleep 1
 
