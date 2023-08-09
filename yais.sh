@@ -368,7 +368,8 @@ if [[ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]]; then
   cp "${ARG_CHARTMAN_UI_DATA}/settings/config.json" "${ARG_CHARTMAN_UI_DATA}/settings/${backup_file}"
 fi
 
-config_hostname="${HOSTNAME%%.*}.${ARG_DOMAIN}"
+[[ -z "$ARG_DOMAIN" ]] && config_hostname='' || config_hostname="${HOSTNAME%%.*}.${ARG_DOMAIN}"
+
 config_template="{
   \"Hostname\": \"${config_hostname}\",
   \"Port\": ${ARG_CHARTMAN_UI_PORT},
@@ -396,7 +397,7 @@ runChartmanOperatorCommand () {
     -v "${ARG_CHARTMAN_UI_DATA}/persistence":"/chartman-operator/data" \
     -v "${ARG_CHARTMAN_UI_DATA}/settings/config.json":"/wwwroot/config.json" \
     $ARG_CHARTMAN_UI_IMAGE:$ARG_CHARTMAN_UI_IMAGE_TAG"
-  
+
   if [ $1  == "set-user" ]; then
     ARGS="--rm $COMMON_ARGS set-user -u $ARG_CHARTMAN_UI_USER -p $ARG_CHARTMAN_UI_PASSWORD"
   elif [ $1 == "server" ]; then
