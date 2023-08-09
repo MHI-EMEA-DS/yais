@@ -306,6 +306,7 @@ if [[ "${ARG_MAIN_SERVICE_DIR}" == "${ARG_MAIN_STACK_DIR}"* ]]; then
       backup_time=$(date +"%Y%m%d%H%M%S")
       cp "${ARG_MAIN_SERVICE_DIR}/values.json" "${ARG_MAIN_SERVICE_DIR}/backup_${backup_time}_values.json"
       cp "${ARG_VALUES_JSON_FILE}" "${ARG_MAIN_SERVICE_DIR}/values.json"
+    fi
   fi
 
   # replace all occurences of " (double-quote) to '\u0022'
