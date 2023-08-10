@@ -299,7 +299,7 @@ fi
 # Validate values json file
 # -------------------------
 
-valuesContent="{}"
+valuesContent="{}"y
 
 if [ ! -f "${ARG_MAIN_SERVICE_DIR}/values.json" ]; then
   echo "values.json file was not found in ${ARG_MAIN_SERVICE_DIR}."
@@ -318,14 +318,21 @@ if [ ! -f "${ARG_MAIN_SERVICE_DIR}/values.json" ]; then
   fi
 else
   echo "values.json file was found in ${ARG_MAIN_SERVICE_DIR}."
-  if [ ! -f "${ARG_VALUES_JSON_FILE}" ]; then
-    valuesContent=$(cat "${ARG_MAIN_SERVICE_DIR}/values.json")
+  if [[ $ARG_VALUES_JSON_FILE != '' ]]; then
+    echo "New values.json file provided: ${ARG_VALUES_JSON_FILE}"
+    if [ ! -f "${ARG_VALUES_JSON_FILE}" ]; then
+      echo "Provided file ${ARG_VALUES_JSON_FILE} was not found. Please provide correct file."
+      exit
+    else
+      echo "Values.Json file has been provided but existing values.json was found. Creating backup file..."
+      valuesContent=$(cat "${ARG_VALUES_JSON_FILE}")
+      backup_time=$(date +"%Y%m%d%H%M%S")
+      cp "${ARG_MAIN_SERVICE_DIR}/values.json" "${ARG_MAIN_SERVICE_DIR}/backup_${backup_time}_values.json"
+      cp "${ARG_VALUES_JSON_FILE}" "${ARG_MAIN_SERVICE_DIR}/values.json"
+    fi
   else
-    echo "Values.Json file has been provided but existing values.json was found. Creating backup file..."
-    valuesContent=$(cat "${ARG_VALUES_JSON_FILE}")
-    backup_time=$(date +"%Y%m%d%H%M%S")
-    cp "${ARG_MAIN_SERVICE_DIR}/values.json" "${ARG_MAIN_SERVICE_DIR}/backup_${backup_time}_values.json"
-    cp "${ARG_VALUES_JSON_FILE}" "${ARG_MAIN_SERVICE_DIR}/values.json"
+    echo "using values.json from ${ARG_MAIN_SERVICE_DIR}/values.json"
+    valuesContent=$(cat "${ARG_MAIN_SERVICE_DIR}/values.json")
   fi
 fi
 
