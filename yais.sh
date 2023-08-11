@@ -339,7 +339,7 @@ fi
 # replace all occurences of " (double-quote) to '\u0022'
 # persistence file is a json that includes another nested json
 # as a value for values.json - we need to replace '"' to '\u022'
-# to ensure value of default values.json is read correctly 
+# to ensure value of default values.json is read correctly
 valuesContent=$(echo $valuesContent | sed 's/"/\\u0022/g')
 
 # ------------------------------------
@@ -383,7 +383,7 @@ echo "${persistence_template}" > "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.jso
 echo "'${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' file created"
 sleep 1
 
-if [[ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]]; then
+if [ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]; then
   echo "Settings file already exists."
   backup_time=$(date +"%Y%m%d%H%M%S")
   backup_file="config_bcp_${backup_time}.json"

@@ -1,0 +1,18 @@
+node_modules/
+lerna-debug.log
+npm-debug.logs
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+dist
+.DS_Store
+tmp
+
+*.d.ts
+
+# TypeScript cache
+*.tsbuildinfo
