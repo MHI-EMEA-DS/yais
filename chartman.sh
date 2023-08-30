@@ -48,7 +48,6 @@ read_run_parameters() {
   runParameters="$1"
 
   requestedVersion=`echo "$runParameters" | sed -n 's/^.*REQUESTED_VERSION=//p'`
-  echo $requestedVersion
   latestVersion=`echo "$runParameters" | sed -n 's/^.*LATEST_VERSION=//p'`
   runDockerArgs=`echo "$runParameters" | sed -n 's/^.*DOCKER_ARGS=//p'`
 }
@@ -107,7 +106,6 @@ fi
 if [ "$latestVersion" != "$requestedVersion" ]; then
   >&2 echo "A newer version is available: $latestVersion"
 fi
-echo $requestedVersion
 trace "Version: $requestedVersion"
 trace "LatestVersion: $latestVersion"
 trace "Docker Args: $runDockerArgs"
