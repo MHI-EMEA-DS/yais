@@ -34,14 +34,11 @@ check_file_modified_within_seconds() {
   file_modified_time=$(stat -c %Y "$file_path")
   time_difference=$((current_time - file_modified_time))
 
-  if [ $time_difference -le $seconds_threshold ]; then
-    return 0
-  else
-    if [ -s "$file_path"]; then
-      return 1
-    else
+  if [ -s "$file_path" ]; then
+    if [ $time_difference -le $seconds_threshold ]; then
       return 0
     fi
+  else
     return 1
   fi
 }
