@@ -106,6 +106,7 @@ fi
 if [ "$latestVersion" != "$requestedVersion" ]; then
   >&2 echo "A newer version is available: $latestVersion"
 fi
+
 trace "Version: $requestedVersion"
 trace "LatestVersion: $latestVersion"
 trace "Docker Args: $runDockerArgs"
