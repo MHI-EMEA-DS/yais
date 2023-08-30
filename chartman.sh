@@ -37,6 +37,9 @@ check_file_modified_within_seconds() {
   if [ $time_difference -le $seconds_threshold ]; then
     return 0
   else
+    if [ -s "$file_path"]; then
+      return 0
+    fi
     return 1
   fi
 }
@@ -45,6 +48,7 @@ read_run_parameters() {
   runParameters="$1"
 
   requestedVersion=`echo "$runParameters" | sed -n 's/^.*REQUESTED_VERSION=//p'`
+  echo $requestedVersion
   latestVersion=`echo "$runParameters" | sed -n 's/^.*LATEST_VERSION=//p'`
   runDockerArgs=`echo "$runParameters" | sed -n 's/^.*DOCKER_ARGS=//p'`
 }
@@ -84,7 +88,7 @@ if check_file_modified_within_seconds "$cacheFilePath" "$cacheTtl"; then
   trace "Cache parameters found $cacheFilePath"
   read_run_parameters "$(cat $cacheFilePath)"
 else
-  if [ -f "$latestFilePath" ]; then
+  if [ -s "$latestFilePath" ]; then
     runVersion=$(<"$latestFilePath")
   else
     runVersion="$minimumRunVersion"
@@ -103,7 +107,7 @@ fi
 if [ "$latestVersion" != "$requestedVersion" ]; then
   >&2 echo "A newer version is available: $latestVersion"
 fi
-
+echo $requestedVersion
 trace "Version: $requestedVersion"
 trace "LatestVersion: $latestVersion"
 trace "Docker Args: $runDockerArgs"
