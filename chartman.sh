@@ -85,8 +85,11 @@ mkdir -p "/tmp/chartman"
 if check_file_modified_within_seconds "$cacheFilePath" "$cacheTtl"; then
   trace "Cache parameters found $cacheFilePath"
   read_run_parameters "$(cat $cacheFilePath)"
+  if [ -z "$requestedVersion" ] || [ -z "$latestVersion" ] || [ -z "$runDockerArgs" ]; then
+    fetch_run_parameters_safe
+  fi
 else
-  if [ -s "$latestFilePath" ]; then
+  if [ -f "$latestFilePath" ]; then
     runVersion=$(<"$latestFilePath")
   else
     runVersion="$minimumRunVersion"
