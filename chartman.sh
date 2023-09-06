@@ -34,8 +34,10 @@ check_file_modified_within_seconds() {
   file_modified_time=$(stat -c %Y "$file_path")
   time_difference=$((current_time - file_modified_time))
 
-  if [ $time_difference -le $seconds_threshold ]; then
-    return 0
+  if [ -s "$file_path" ]; then
+    if [ $time_difference -le $seconds_threshold ]; then
+      return 0
+    fi
   else
     return 1
   fi
@@ -83,6 +85,9 @@ mkdir -p "/tmp/chartman"
 if check_file_modified_within_seconds "$cacheFilePath" "$cacheTtl"; then
   trace "Cache parameters found $cacheFilePath"
   read_run_parameters "$(cat $cacheFilePath)"
+  if [ -z "$requestedVersion" ] || [ -z "$latestVersion" ] || [ -z "$runDockerArgs" ]; then
+    fetch_run_parameters_safe
+  fi
 else
   if [ -f "$latestFilePath" ]; then
     runVersion=$(<"$latestFilePath")
