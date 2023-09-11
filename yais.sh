@@ -295,7 +295,7 @@ fi
 # Validate values json file
 # -------------------------
 
-valuesContent="{}"y
+valuesContent="{}"
 
 if [ ! -f "${ARG_MAIN_SERVICE_DIR}/values.json" ]; then
   echo "values.json file was not found in ${ARG_MAIN_SERVICE_DIR}."
