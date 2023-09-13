@@ -204,9 +204,7 @@ echo "Main Stack Network:      ${ARG_MAIN_STACK_NETWORK}"
 echo "Main Service Name:       ${ARG_MAIN_SERVICE_NAME}"
 echo "Main Service Directory:  ${ARG_MAIN_SERVICE_DIR}"
 echo "Main Service Chart:      ${ARG_MAIN_SERVICE_CHART}"
-if [[ $ARG_CHARTMAN_HOME != [[${HOME}]] ]]; then
-    echo "Chartman home Directory: ${AGR_CHARMAN_HOME}"
-fi
+echo "Chartman home Directory: ${AGR_CHARMAN_HOME}"
 echo "GUI User:                ${ARG_CHARTMAN_UI_USER}"
 echo "GUI Password:            ***********"
 echo "GUI Port:                ${ARG_CHARTMAN_UI_PORT}"
