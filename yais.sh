@@ -46,7 +46,7 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "  --ServiceChart        | Name of the main service chart."
   echo "                        | Default: '@mhie-ds/iog-metals'"
   echo "  --ChartmanHome        | Path to custom Chartman home directory."
-  echo "                        | Default: 'HOME'"
+  echo "                        | Default: '$HOME'"
   echo "  --ChartmanUiPort      | Port on which Chartman GUI will be served."
   echo "                        | Default: 2314"
   echo "  --ChartmanUiContainer | Name for the Chartman GUI container."
