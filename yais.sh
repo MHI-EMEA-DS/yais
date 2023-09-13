@@ -32,8 +32,6 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "install-script.sh --param1 value1 --param2 value2 ..."
   echo "Parameters:"
   echo ""
-  echo "  --Domain              | Name for current network domain for deployment"
-  echo "                        | Default: '' (empty)"
   echo "  --StackName           | Name for the default deployment stack."
   echo "                        | Default: 'SXS-MAIN-STACK'"
   echo "  --ServiceName         | Name for the default deployment service."
