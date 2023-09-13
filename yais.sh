@@ -4,7 +4,6 @@ ARG_DOCKER_REGISTRY_URL=''
 ARG_DOCKER_REGISTRY_USER=''
 ARG_DOCKER_REGISTRY_PASSWORD=''
 
-ARG_DOMAIN=''
 ARG_MAIN_STACK_NAME='SXS_MAIN_SERVICE'
 ARG_MAIN_STACK_NETWORK='gccp'
 ARG_MAIN_STACK_DIR='/mhi'
@@ -89,9 +88,7 @@ do
     keyName=${arg,,}
     isKey=0
   else
-    if [[ $keyName == '--domain' ]]; then
-      ARG_DOMAIN="${arg}"
-    elif [[ $keyName == '--stackname' ]]; then
+    if [[ $keyName == '--stackname' ]]; then
       ARG_MAIN_STACK_NAME="${arg}"
     elif [[ $keyName == '--servicename' ]]; then
       ARG_MAIN_SERVICE_NAME="${arg}"
@@ -198,7 +195,6 @@ fi
 
 echo "Starting Chartman UI with parameters:"
 echo ""
-echo "Domain:                 ${ARG_DOMAIN}"
 echo "Main Stack Name:        ${ARG_MAIN_STACK_NAME}"
 echo "Main Stack Directory:   ${ARG_MAIN_STACK_DIR}"
 echo "Main Stack Network:     ${ARG_MAIN_STACK_NETWORK}"
@@ -299,7 +295,7 @@ fi
 # Validate values json file
 # -------------------------
 
-valuesContent="{}"y
+valuesContent="{}"
 
 if [ ! -f "${ARG_MAIN_SERVICE_DIR}/values.json" ]; then
   echo "values.json file was not found in ${ARG_MAIN_SERVICE_DIR}."
@@ -393,7 +389,7 @@ if [[ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]]; then
   cp "${ARG_CHARTMAN_UI_DATA}/settings/config.json" "${ARG_CHARTMAN_UI_DATA}/settings/${backup_file}"
 fi
 
-[[ -z "$ARG_DOMAIN" ]] && config_hostname='' || config_hostname="${HOSTNAME%%.*}.${ARG_DOMAIN}"
+config_hostname=""
 
 config_template="{
   \"Hostname\": \"${config_hostname}\",
