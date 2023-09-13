@@ -10,7 +10,7 @@ ARG_MAIN_STACK_DIR='/mhi'
 ARG_MAIN_SERVICE_NAME='SXS_SERVICE'
 ARG_MAIN_SERVICE_DIR='/mhi'
 ARG_MAIN_SERVICE_CHART='@mhie-ds/iog-metals'
-ARG_CHARTMAN_HOME='${HOME}'
+ARG_CHARTMAN_HOME=${HOME}
 ARG_CHARTMAN_UI_USER=''
 ARG_CHARTMAN_UI_PASSWORD=''
 ARG_CHARTMAN_UI_PORT=2314
@@ -204,7 +204,7 @@ echo "Main Stack Network:      ${ARG_MAIN_STACK_NETWORK}"
 echo "Main Service Name:       ${ARG_MAIN_SERVICE_NAME}"
 echo "Main Service Directory:  ${ARG_MAIN_SERVICE_DIR}"
 echo "Main Service Chart:      ${ARG_MAIN_SERVICE_CHART}"
-if [[ $ARG_CHARTMAN_HOME != '' ]]; then
+if [[ $ARG_CHARTMAN_HOME != [[${HOME}]] ]]; then
     echo "Chartman home Directory: ${AGR_CHARMAN_HOME}"
 fi
 echo "GUI User:                ${ARG_CHARTMAN_UI_USER}"
