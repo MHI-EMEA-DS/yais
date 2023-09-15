@@ -46,7 +46,7 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "  --ServiceChart        | Name of the main service chart."
   echo "                        | Default: '@mhie-ds/iog-metals'"
   echo "  --ChartmanHome        | Path to custom Chartman home directory."
-  echo "                        | Default: '$HOME'"
+  echo "                        | Default: '$HOME/.chartman'"
   echo "  --ChartmanUiPort      | Port on which Chartman GUI will be served."
   echo "                        | Default: 2314"
   echo "  --ChartmanUiContainer | Name for the Chartman GUI container."
@@ -204,7 +204,7 @@ echo "Main Stack Network:      ${ARG_MAIN_STACK_NETWORK}"
 echo "Main Service Name:       ${ARG_MAIN_SERVICE_NAME}"
 echo "Main Service Directory:  ${ARG_MAIN_SERVICE_DIR}"
 echo "Main Service Chart:      ${ARG_MAIN_SERVICE_CHART}"
-echo "Chartman home Directory: ${AGR_CHARMAN_HOME}"
+echo "Chartman home Directory: ${ARG_CHARTMAN_HOME}"
 echo "GUI User:                ${ARG_CHARTMAN_UI_USER}"
 echo "GUI Password:            ***********"
 echo "GUI Port:                ${ARG_CHARTMAN_UI_PORT}"
@@ -417,7 +417,7 @@ runChartmanOperatorCommand () {
     -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
     -e DOCKER_PW=$ARG_DOCKER_REGISTRY_PASSWORD \
     -v "${ARG_MAIN_STACK_DIR}":"${ARG_MAIN_STACK_DIR}" \
-    -v "${ARG_CHARTMAN_HOME}:"/app/data/.chartman" \
+    -v "${ARG_CHARTMAN_HOME}":"/app/data/.chartman" \
     -v "/var/run/docker.sock":"/var/run/docker.sock" \
     -v "${ARG_CHARTMAN_UI_DATA}/persistence":"/chartman-operator/data" \
     -v "${ARG_CHARTMAN_UI_DATA}/settings/config.json":"/wwwroot/config.json" \
