@@ -10,7 +10,7 @@ ARG_MAIN_STACK_DIR='/mhi'
 ARG_MAIN_SERVICE_NAME='SXS_SERVICE'
 ARG_MAIN_SERVICE_DIR='/mhi'
 ARG_MAIN_SERVICE_CHART='@mhie-ds/iog-metals'
-ARG_CHARTMAN_HOME=${HOME}
+ARG_CHARTMAN_HOME="${HOME}/.chartman"
 ARG_CHARTMAN_UI_USER=''
 ARG_CHARTMAN_UI_PASSWORD=''
 ARG_CHARTMAN_UI_PORT=2314
@@ -417,7 +417,7 @@ runChartmanOperatorCommand () {
     -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
     -e DOCKER_PW=$ARG_DOCKER_REGISTRY_PASSWORD \
     -v "${ARG_MAIN_STACK_DIR}":"${ARG_MAIN_STACK_DIR}" \
-    -v "${ARG_CHARTMAN_HOME}/.chartman":"/app/data/.chartman" \
+    -v "${ARG_CHARTMAN_HOME}:"/app/data/.chartman" \
     -v "/var/run/docker.sock":"/var/run/docker.sock" \
     -v "${ARG_CHARTMAN_UI_DATA}/persistence":"/chartman-operator/data" \
     -v "${ARG_CHARTMAN_UI_DATA}/settings/config.json":"/wwwroot/config.json" \
