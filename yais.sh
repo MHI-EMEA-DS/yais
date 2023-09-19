@@ -10,6 +10,7 @@ ARG_MAIN_STACK_DIR='/mhi'
 ARG_MAIN_SERVICE_NAME='SXS_SERVICE'
 ARG_MAIN_SERVICE_DIR='/mhi'
 ARG_MAIN_SERVICE_CHART='@mhie-ds/iog-metals'
+ARG_CHARTMAN_HOME="${HOME}/.chartman"
 ARG_CHARTMAN_UI_USER=''
 ARG_CHARTMAN_UI_PASSWORD=''
 ARG_CHARTMAN_UI_PORT=2314
@@ -32,8 +33,6 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "install-script.sh --param1 value1 --param2 value2 ..."
   echo "Parameters:"
   echo ""
-  echo "  --Domain              | Name for current network domain for deployment"
-  echo "                        | Default: '' (empty)"
   echo "  --StackName           | Name for the default deployment stack."
   echo "                        | Default: 'SXS-MAIN-STACK'"
   echo "  --ServiceName         | Name for the default deployment service."
@@ -46,6 +45,8 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "                        | Default: 'gccp'"
   echo "  --ServiceChart        | Name of the main service chart."
   echo "                        | Default: '@mhie-ds/iog-metals'"
+  echo "  --ChartmanHome        | Path to custom Chartman home directory."
+  echo "                        | Default: '$HOME/.chartman'"
   echo "  --ChartmanUiPort      | Port on which Chartman GUI will be served."
   echo "                        | Default: 2314"
   echo "  --ChartmanUiContainer | Name for the Chartman GUI container."
@@ -100,6 +101,8 @@ do
       ARG_MAIN_STACK_NETWORK="${arg}"
     elif [[ $keyName == '--servicechart' ]]; then
       ARG_MAIN_SERVICE_CHART="${arg}"
+    elif [[ $keyName == '--chartmanhome' ]]; then
+      ARG_CHARTMAN_HOME="${arg}"
     elif [[ $keyName == '--chartmanuiport' ]]; then
       ARG_CHARTMAN_UI_PORT="${arg}"
     elif [[ $keyName == '--chartmanuicontainer' ]]; then
@@ -195,24 +198,25 @@ fi
 
 echo "Starting Chartman UI with parameters:"
 echo ""
-echo "Main Stack Name:        ${ARG_MAIN_STACK_NAME}"
-echo "Main Stack Directory:   ${ARG_MAIN_STACK_DIR}"
-echo "Main Stack Network:     ${ARG_MAIN_STACK_NETWORK}"
-echo "Main Service Name:      ${ARG_MAIN_SERVICE_NAME}"
-echo "Main Service Directory: ${ARG_MAIN_SERVICE_DIR}"
-echo "Main Service Chart:     ${ARG_MAIN_SERVICE_CHART}"
-echo "GUI User:               ${ARG_CHARTMAN_UI_USER}"
-echo "GUI Password:           ***********"
-echo "GUI Port:               ${ARG_CHARTMAN_UI_PORT}"
-echo "GUI Container Name:     ${ARG_CHARTMAN_UI_CONTAINER}"
-echo "GUI Image:              ${ARG_CHARTMAN_UI_IMAGE}"
-echo "GUI Image Version/Tag:  ${ARG_CHARTMAN_UI_IMAGE_TAG}"
-echo "GUI Data Directory:     ${ARG_CHARTMAN_UI_DATA}"
-echo "Docker Registry:        ${ARG_DOCKER_REGISTRY_URL}"
-echo "Docker registry user:   ${ARG_DOCKER_REGISTRY_USER}"
-echo "Docker registry token:  ***********"
+echo "Main Stack Name:         ${ARG_MAIN_STACK_NAME}"
+echo "Main Stack Directory:    ${ARG_MAIN_STACK_DIR}"
+echo "Main Stack Network:      ${ARG_MAIN_STACK_NETWORK}"
+echo "Main Service Name:       ${ARG_MAIN_SERVICE_NAME}"
+echo "Main Service Directory:  ${ARG_MAIN_SERVICE_DIR}"
+echo "Main Service Chart:      ${ARG_MAIN_SERVICE_CHART}"
+echo "Chartman home Directory: ${ARG_CHARTMAN_HOME}"
+echo "GUI User:                ${ARG_CHARTMAN_UI_USER}"
+echo "GUI Password:            ***********"
+echo "GUI Port:                ${ARG_CHARTMAN_UI_PORT}"
+echo "GUI Container Name:      ${ARG_CHARTMAN_UI_CONTAINER}"
+echo "GUI Image:               ${ARG_CHARTMAN_UI_IMAGE}"
+echo "GUI Image Version/Tag:   ${ARG_CHARTMAN_UI_IMAGE_TAG}"
+echo "GUI Data Directory:      ${ARG_CHARTMAN_UI_DATA}"
+echo "Docker Registry:         ${ARG_DOCKER_REGISTRY_URL}"
+echo "Docker registry user:    ${ARG_DOCKER_REGISTRY_USER}"
+echo "Docker registry token:   ***********"
 if [[ $ARG_MAIN_SERVICE_DIR != '' ]]; then
-  echo "Values file:            ${ARG_VALUES_JSON_FILE}"
+  echo "Values file:             ${ARG_VALUES_JSON_FILE}"
 fi
 echo ""
 sleep 1
@@ -413,7 +417,7 @@ runChartmanOperatorCommand () {
     -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
     -e DOCKER_PW=$ARG_DOCKER_REGISTRY_PASSWORD \
     -v "${ARG_MAIN_STACK_DIR}":"${ARG_MAIN_STACK_DIR}" \
-    -v "${HOME}/.chartman":"/app/data/.chartman" \
+    -v "${ARG_CHARTMAN_HOME}":"/app/data/.chartman" \
     -v "/var/run/docker.sock":"/var/run/docker.sock" \
     -v "${ARG_CHARTMAN_UI_DATA}/persistence":"/chartman-operator/data" \
     -v "${ARG_CHARTMAN_UI_DATA}/settings/config.json":"/wwwroot/config.json" \
