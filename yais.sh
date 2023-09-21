@@ -426,7 +426,7 @@ runChartmanOperatorCommand () {
   if [ $1  == "set-user" ]; then
     ARGS="--rm $COMMON_ARGS set-user -u $ARG_CHARTMAN_UI_USER -p $ARG_CHARTMAN_UI_PASSWORD"
   elif [ $1 == "server" ]; then
-    ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER -p $ARG_CHARTMAN_UI_PORT:80 $COMMON_ARGS server"
+    ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER -p $ARG_CHARTMAN_UI_PORT:80 -v $HOME/.npmrc:/root/.npmrc $COMMON_ARGS server"
   fi
 
   docker run $ARGS
