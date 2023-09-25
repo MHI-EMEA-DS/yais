@@ -14,6 +14,7 @@ ARG_CHARTMAN_HOME="${HOME}/.chartman"
 ARG_CHARTMAN_UI_USER=''
 ARG_CHARTMAN_UI_PASSWORD=''
 ARG_CHARTMAN_UI_PORT=2314
+ARG_CHARTMAN_UI_PORTS=''
 ARG_CHARTMAN_UI_DATA='/chartman-ui'
 ARG_CHARTMAN_UI_CONTAINER='chartman_docker_operator_ui'
 ARG_CHARTMAN_UI_IMAGE='chartman/docker-operator-ui'
@@ -48,7 +49,12 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "  --ChartmanHome        | Path to custom Chartman home directory."
   echo "                        | Default: '$HOME/.chartman'"
   echo "  --ChartmanUiPort      | Port on which Chartman GUI will be served."
+  echo "                        | It will be bound to 127.0.0.1 only"
   echo "                        | Default: 2314"
+  echo "  --ChartmanUiPorts     | Comma separated list of ips and ports on which Chartman GUI will be served."
+  echo "                        | In case both --ChartmanUiPort and --ChartmanUiPorts are provided, --ChartmanUiPorts will be used."
+  echo "                        | Example: --ChartmanUiPorts 127.0.0.1:2314,192.168.0.101:2377,127.0.0.1:2315"
+  echo "                        | Default: '' (empty)"
   echo "  --ChartmanUiContainer | Name for the Chartman GUI container."
   echo "                        | Default: 'chartman_docker_operator_ui'"
   echo "  --DockerRegistry      | Url of the docker registry."
@@ -125,6 +131,8 @@ do
       ARG_CHARTMAN_UI_IMAGE_TAG="${arg}"
     elif [[ $keyName == '--valuesfile' ]]; then
       ARG_VALUES_JSON_FILE="${arg}"
+    elif [[ $keyName == '--chartmanuiports' ]]; then
+      ARG_CHARTMAN_UI_PORTS="${arg}"
     else
       echo "Unknown parameter provided: ${keyName}"
       exit
@@ -426,7 +434,19 @@ runChartmanOperatorCommand () {
   if [ $1  == "set-user" ]; then
     ARGS="--rm $COMMON_ARGS set-user -u $ARG_CHARTMAN_UI_USER -p $ARG_CHARTMAN_UI_PASSWORD"
   elif [ $1 == "server" ]; then
-    ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER -p $ARG_CHARTMAN_UI_PORT:80 -v $HOME/.npmrc:/root/.npmrc $COMMON_ARGS server"
+    if [ -n "$ARG_CHARTMAN_UI_PORTS" ]; then
+      PORT_MAPPING=""
+      PUBLIC_PORTS_ASSIGNMENT="$ARG_CHARTMAN_UI_PORTS"
+      IFS=',' read -ra parts <<< "$ARG_CHARTMAN_UI_PORTS"
+          for part in "${parts[@]}"; do
+            PORT_MAPPING="$PORT_MAPPING -p $part:80"
+          done
+    else
+      PORT_MAPPING="-p 127.0.0.1:$ARG_CHARTMAN_UI_PORT:80"
+      PUBLIC_PORTS_ASSIGNMENT="127.0.0.1:$ARG_CHARTMAN_UI_PORT"
+    fi
+
+    ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER $PORT_MAPPING -e PUBLIC_PORTS_ASSIGNMENT=$PUBLIC_PORTS_ASSIGNMENT -v /home/ivan/.npmrc:/root/.npmrc $COMMON_ARGS server"
   fi
 
   docker run $ARGS
