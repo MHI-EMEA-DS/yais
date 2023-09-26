@@ -446,7 +446,7 @@ runChartmanOperatorCommand () {
       PUBLIC_PORTS_ASSIGNMENT="127.0.0.1:$ARG_CHARTMAN_UI_PORT"
     fi
 
-    ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER $PORT_MAPPING -e PUBLIC_PORTS_ASSIGNMENT=$PUBLIC_PORTS_ASSIGNMENT -v /home/ivan/.npmrc:/root/.npmrc $COMMON_ARGS server"
+    ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER $PORT_MAPPING -e PUBLIC_PORTS_ASSIGNMENT=$PUBLIC_PORTS_ASSIGNMENT -v $HOME/.npmrc:/root/.npmrc $COMMON_ARGS server"
   fi
 
   docker run $ARGS
