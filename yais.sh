@@ -50,6 +50,7 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "                        | Default: '$HOME/.chartman'"
   echo "  --ChartmanUiPort      | Port on which Chartman GUI will be served."
   echo "                        | It will be bound to 127.0.0.1 only"
+  echo "                        | It is obsolete, Please use ChartmanUiPorts, as it gives more flexibility"
   echo "                        | Default: 2314"
   echo "  --ChartmanUiPorts     | Comma separated list of ips and ports on which Chartman GUI will be served."
   echo "                        | In case both --ChartmanUiPort and --ChartmanUiPorts are provided, --ChartmanUiPorts will be used."
@@ -215,7 +216,11 @@ echo "Main Service Chart:      ${ARG_MAIN_SERVICE_CHART}"
 echo "Chartman home Directory: ${ARG_CHARTMAN_HOME}"
 echo "GUI User:                ${ARG_CHARTMAN_UI_USER}"
 echo "GUI Password:            ***********"
-echo "GUI Port:                ${ARG_CHARTMAN_UI_PORT}"
+if [[ -n $ARG_CHARTMAN_UI_PORTS ]]; then
+  echo "GUI Ports:               ${ARG_CHARTMAN_UI_PORTS}"
+else
+  echo "GUI Port:                ${ARG_CHARTMAN_UI_PORT}"
+fi
 echo "GUI Container Name:      ${ARG_CHARTMAN_UI_CONTAINER}"
 echo "GUI Image:               ${ARG_CHARTMAN_UI_IMAGE}"
 echo "GUI Image Version/Tag:   ${ARG_CHARTMAN_UI_IMAGE_TAG}"
