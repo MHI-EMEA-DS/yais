@@ -215,7 +215,11 @@ echo "Main Service Chart:      ${ARG_MAIN_SERVICE_CHART}"
 echo "Chartman home Directory: ${ARG_CHARTMAN_HOME}"
 echo "GUI User:                ${ARG_CHARTMAN_UI_USER}"
 echo "GUI Password:            ***********"
-echo "GUI Port:                ${ARG_CHARTMAN_UI_PORT}"
+if [[ -n $ARG_CHARTMAN_UI_PORTS ]]; then
+  echo "GUI Ports:               ${ARG_CHARTMAN_UI_PORTS}"
+else
+  echo "GUI Port:                ${ARG_CHARTMAN_UI_PORT}"
+fi
 echo "GUI Container Name:      ${ARG_CHARTMAN_UI_CONTAINER}"
 echo "GUI Image:               ${ARG_CHARTMAN_UI_IMAGE}"
 echo "GUI Image Version/Tag:   ${ARG_CHARTMAN_UI_IMAGE_TAG}"
