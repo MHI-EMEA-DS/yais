@@ -50,6 +50,7 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "                        | Default: '$HOME/.chartman'"
   echo "  --ChartmanUiPort      | Port on which Chartman GUI will be served."
   echo "                        | It will be bound to 127.0.0.1 only"
+  echo "                        | It is obsolete, Please use ChartmanUiPorts, as it gives more flexibility"
   echo "                        | Default: 2314"
   echo "  --ChartmanUiPorts     | Comma separated list of ips and ports on which Chartman GUI will be served."
   echo "                        | In case both --ChartmanUiPort and --ChartmanUiPorts are provided, --ChartmanUiPorts will be used."
