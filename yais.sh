@@ -9,7 +9,7 @@ ARG_MAIN_STACK_NETWORK='gccp'
 ARG_MAIN_STACK_DIR='/mhi'
 ARG_MAIN_SERVICE_NAME='SXS_SERVICE'
 ARG_MAIN_SERVICE_DIR='/mhi'
-ARG_MAIN_SERVICE_CHART='@mhie-ds/iog-metals'
+ARG_MAIN_SERVICE_CHART='@mhie-ds/charts-metals-iog'
 ARG_CHARTMAN_HOME="${HOME}/.chartman"
 ARG_CHARTMAN_UI_USER=''
 ARG_CHARTMAN_UI_PASSWORD=''
@@ -45,7 +45,7 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "  --StackNetwork        | Name of the network shared for all stack services."
   echo "                        | Default: 'gccp'"
   echo "  --ServiceChart        | Name of the main service chart."
-  echo "                        | Default: '@mhie-ds/iog-metals'"
+  echo "                        | Default: '@mhie-ds/charts-metals-iog'"
   echo "  --ChartmanHome        | Path to custom Chartman home directory."
   echo "                        | Default: '$HOME/.chartman'"
   echo "  --ChartmanUiPort      | Port on which Chartman GUI will be served."
@@ -282,7 +282,8 @@ initializeChartman () {
 
     echo "Chartman project is not yet initialized."
     echo "Performing 'chartman init ${ARG_MAIN_SERVICE_CHART}' in ${1} directory"
-    chartman init $ARG_MAIN_SERVICE_CHART
+    mkdir .chartman
+    echo '{ "chart": "'${ARG_MAIN_SERVICE_CHART}'", "deployments": []}' > ${1}/.chartman/state.json
     cd $current_dir
   fi
 }
