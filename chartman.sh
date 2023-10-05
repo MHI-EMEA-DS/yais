@@ -34,10 +34,8 @@ check_file_modified_within_seconds() {
   file_modified_time=$(stat -c %Y "$file_path")
   time_difference=$((current_time - file_modified_time))
 
-  if [ -s "$file_path" ]; then
-    if [ $time_difference -le $seconds_threshold ]; then
-      return 0
-    fi
+  if [ $time_difference -le $seconds_threshold ]; then
+    return 0
   else
     return 1
   fi
@@ -56,10 +54,11 @@ fetch_run_parameters() {
 
   trace "Fetching run parameters with version $version"
 
-  runParametersOutput=`docker run --rm -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$version internal get-run-parameters --image-url $dockerImage $versionRequest 2>>"$tracesFilePath"`
+  fetchParameters=`docker run --rm -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$version internal get-run-parameters --image-url $dockerImage $versionRequest 2>>"$tracesFilePath"`
   runSucceed=$?
 
   if [ "$runSucceed" -eq 0 ]; then
+    runParametersOutput="$fetchParameters"
     read_run_parameters "$runParametersOutput"
   fi
 }
@@ -70,6 +69,23 @@ fetch_run_parameters_safe() {
   if [ "$runSucceed" -ne 0 ]; then
     fetch_run_parameters $minimumRunVersion
   fi
+}
+
+resolve_run_parameters() {
+  if [ -f "$latestFilePath" ]; then
+      runVersion=$(<"$latestFilePath")
+    else
+      runVersion="$minimumRunVersion"
+    fi
+
+    fetch_run_parameters_safe $runVersion
+
+    if [ "$latestVersion" != "$runVersion" ]; then
+      fetch_run_parameters_safe $latestVersion
+      echo "$latestVersion" > $latestFilePath
+    fi
+
+    echo "$runParametersOutput" > $cacheFilePath
 }
 
 trace "Docker Image: $dockerImage"
@@ -86,23 +102,10 @@ if check_file_modified_within_seconds "$cacheFilePath" "$cacheTtl"; then
   trace "Cache parameters found $cacheFilePath"
   read_run_parameters "$(cat $cacheFilePath)"
   if [ -z "$requestedVersion" ] || [ -z "$latestVersion" ] || [ -z "$runDockerArgs" ]; then
-    fetch_run_parameters_safe
+    resolve_run_parameters
   fi
 else
-  if [ -f "$latestFilePath" ]; then
-    runVersion=$(<"$latestFilePath")
-  else
-    runVersion="$minimumRunVersion"
-  fi
-
-  fetch_run_parameters_safe $runVersion
-
-  if [ "$latestVersion" != "$runVersion" ]; then
-    fetch_run_parameters_safe $latestVersion
-    echo "$latestVersion" > $latestFilePath
-  fi
-
-  echo "$runParametersOutput" > $cacheFilePath
+  resolve_run_parameters
 fi
 
 if [ "$latestVersion" != "$requestedVersion" ]; then
