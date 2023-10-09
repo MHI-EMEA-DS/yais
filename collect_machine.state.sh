@@ -3,7 +3,7 @@
 capture_docker_info() {
     local output_file="$1"
 
-    local container_info=$(docker ps --format "{{.ID}} {{.Names}}" | sed 's/ /:/')
+    local container_info=$(docker ps -a --format "{{.ID}} {{.Names}}" | sed 's/ /:/')
 
     while IFS=':' read -r container_id container_name; do
         echo "Container ID: $container_id" >> "$output_file"
