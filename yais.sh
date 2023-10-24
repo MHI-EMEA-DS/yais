@@ -7,7 +7,6 @@ ARG_DOCKER_REGISTRY_PASSWORD=''
 ARG_MAIN_STACK_NAME='SXS_MAIN_SERVICE'
 ARG_MAIN_STACK_NETWORK='gccp'
 ARG_MAIN_STACK_DIR='/mhi'
-ARG_MAIN_SERVICE_NAME='SXS_SERVICE'
 ARG_MAIN_SERVICE_DIR='/mhi'
 ARG_MAIN_SERVICE_CHART='@mhie-ds/charts-metals-iog'
 ARG_CHARTMAN_HOME="${HOME}/.chartman"
@@ -36,8 +35,6 @@ if [[ "${1,,}" == "--help" ]]; then
   echo ""
   echo "  --StackName           | Name for the default deployment stack."
   echo "                        | Default: 'SXS-MAIN-STACK'"
-  echo "  --ServiceName         | Name for the default deployment service."
-  echo "                        | Default: 'SXS-MAIN-SERVICE'"
   echo "  --StackDir            | Stack base directory"
   echo "                        | Default: '/mhi'"
   echo "  --ServiceDir          | Service base directory. Must be inside or the same as base stack directory."
@@ -98,8 +95,6 @@ do
   else
     if [[ $keyName == '--stackname' ]]; then
       ARG_MAIN_STACK_NAME="${arg}"
-    elif [[ $keyName == '--servicename' ]]; then
-      ARG_MAIN_SERVICE_NAME="${arg}"
     elif [[ $keyName == '--stackdir' ]]; then
       ARG_MAIN_STACK_DIR="${arg}"
     elif [[ $keyName == '--servicedir' ]]; then
@@ -210,7 +205,6 @@ echo ""
 echo "Main Stack Name:         ${ARG_MAIN_STACK_NAME}"
 echo "Main Stack Directory:    ${ARG_MAIN_STACK_DIR}"
 echo "Main Stack Network:      ${ARG_MAIN_STACK_NETWORK}"
-echo "Main Service Name:       ${ARG_MAIN_SERVICE_NAME}"
 echo "Main Service Directory:  ${ARG_MAIN_SERVICE_DIR}"
 echo "Main Service Chart:      ${ARG_MAIN_SERVICE_CHART}"
 echo "Chartman home Directory: ${ARG_CHARTMAN_HOME}"
@@ -379,17 +373,7 @@ persistence_template="[
     \"WorkingDir\": \"${ARG_MAIN_STACK_DIR}\",
     \"CreatedAt\": \"${current_time}\",
     \"UpdatedAt\": \"${current_time}\",
-    \"Services\": [
-      {
-        \"Id\": \"${service_id}\",
-        \"Name\": \"${ARG_MAIN_SERVICE_NAME}\",
-        \"WorkingDir\": \"${ARG_MAIN_SERVICE_DIR}\",
-        \"Chart\": \"${ARG_MAIN_SERVICE_CHART}\",
-        \"Values\": \"${valuesContent}\",
-        \"CreatedAt\": \"${current_time}\",
-        \"UpdatedAt\": \"${current_time}\"
-      }
-    ]
+    \"Services\": []
   }
 ]"
 
