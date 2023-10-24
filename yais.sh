@@ -22,7 +22,6 @@ ARG_VALUES_JSON_FILE=''
 
 current_time=$(date +"%Y-%m-%dT%H:%M:%S")
 stack_id=$(uuidgen)
-service_id=$(uuidgen)
 
 ## --------------------------------
 ## Provide help if --help requested
