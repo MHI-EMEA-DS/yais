@@ -384,6 +384,11 @@ persistence_template="[
         \"Id\": \"${service_id}\",
         \"Name\": \"${ARG_MAIN_SERVICE_NAME}\",
         \"WorkingDir\": \"${ARG_MAIN_SERVICE_DIR}\",
+        \"WebAccess\": {
+          \"Hostname\": \"\",
+          \"Protocol\": \"\",
+          \"Port\": 0,
+        },
         \"Chart\": \"${ARG_MAIN_SERVICE_CHART}\",
         \"Values\": \"${valuesContent}\",
         \"CreatedAt\": \"${current_time}\",
