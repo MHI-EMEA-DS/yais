@@ -362,7 +362,7 @@ if [ -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]; then
   working_dir=$( echo  "$(echo $json | grep -o '"WorkingDir": "[^"]*' | sed 's/"WorkingDir": "//')" | cut -d ' ' -f 1)
   services=$(echo $json | grep -o '"Services": \[[^]]*\]' | sed 's/"Services": //')
     if [[ ${ARG_MAIN_STACK_DIR} == "$working_dir" && $services != "[]" ]]; then
-       echo "coping services..."
+       echo "Copying existing services..."
     else
        services=[]
     fi
