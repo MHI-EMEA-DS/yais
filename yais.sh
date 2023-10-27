@@ -358,6 +358,15 @@ sleep 1
 
 if [ -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]; then
   echo "Persistence file '${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' already exists."
+  json=$(cat "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json")
+  working_dir=$( echo  "$(echo $json | grep -o '"WorkingDir": "[^"]*' | sed 's/"WorkingDir": "//')" | cut -d ' ' -f 1)
+  services=$(echo $json | grep -o '"Services": \[[^]]*\]' | sed 's/"Services": //')
+    if [[ ${ARG_MAIN_STACK_DIR} == "$working_dir" && $services != "[]" ]]; then
+       echo "coping services..."
+    else
+       services=[]
+    fi
+
   echo "Creating a backup copy of current persistence file..."
   backup_time=$(date +"%Y%m%d%H%M%S")
   cp "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" "${ARG_CHARTMAN_UI_DATA}/persistence/backup_${backup_time}_stacks.json"
@@ -372,7 +381,7 @@ persistence_template="[
     \"WorkingDir\": \"${ARG_MAIN_STACK_DIR}\",
     \"CreatedAt\": \"${current_time}\",
     \"UpdatedAt\": \"${current_time}\",
-    \"Services\": []
+    \"Services\": $services
   }
 ]"
 
