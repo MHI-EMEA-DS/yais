@@ -54,7 +54,7 @@ fetch_run_parameters() {
 
   trace "Fetching run parameters with version $version"
 
-  fetchParameters=`docker run --rm -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$version internal get-run-parameters --image-url $dockerImage $versionRequest 2>>"$tracesFilePath"`
+  fetchParameters=`docker run --rm -e CHARTMAN_DOCKER_REGISTRY_TOKEN=$CHARTMAN_DOCKER_REGISTRY_TOKEN -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$version internal get-run-parameters --image-url $dockerImage $versionRequest 2>>"$tracesFilePath"`
   runSucceed=$?
 
   if [ "$runSucceed" -eq 0 ]; then
