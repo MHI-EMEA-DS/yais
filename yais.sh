@@ -358,26 +358,33 @@ sleep 1
 
 if [ -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]; then
   echo "Persistence file '${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' already exists."
-  echo "Creating a backup copy of current persistence file..."
-  backup_time=$(date +"%Y%m%d%H%M%S")
-  cp "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" "${ARG_CHARTMAN_UI_DATA}/persistence/backup_${backup_time}_stacks.json"
+  echo "Checking values from current persistence file..."
+  json=$(cat "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json")
+  stack_name=$(echo "$(echo "$json" |grep -o '"Name": "[^"]*' | sed 's/"Name": "//')" | cut -d ' ' -f 1)
+  network=$(echo "$json" | grep -o '"Network": "[^"]*' | sed 's/"Network": "//')
+  working_dir=$(echo "$(echo "$json" | grep -o '"WorkingDir": "[^"]*' | sed 's/"WorkingDir": "//')" | cut -d ' ' -f 1)
+  if [[ ${ARG_MAIN_STACK_NAME} == "$stack_name" && ${ARG_MAIN_STACK_DIR} == "$working_dir" && ${ARG_MAIN_STACK_NETWORK} == "$network" ]]; then
+     echo "using stacks.json from ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
+  else
+     echo "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json contains values different from args"
+     echo "Error: provide the same stack name -- ${stack_name}, working dir -- ${working_dir}, network -- ${network} or remove ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
+     exit
+  fi
+else
+  persistence_template="[
+    {
+      \"Id\": \"${stack_id}\",
+      \"Name\": \"${ARG_MAIN_STACK_NAME}\",
+      \"Network\": \"${ARG_MAIN_STACK_NETWORK}\",
+      \"WorkingDir\": \"${ARG_MAIN_STACK_DIR}\",
+      \"CreatedAt\": \"${current_time}\",
+      \"UpdatedAt\": \"${current_time}\",
+      \"Services\": []
+    }
+  ]"
+  echo "${persistence_template}" > "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
+  echo "'${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' file created"
 fi
-
-valuesContent=$(echo $valuesContent | sed 's/"/\\u0022/g')
-persistence_template="[
-  {
-    \"Id\": \"${stack_id}\",
-    \"Name\": \"${ARG_MAIN_STACK_NAME}\",
-    \"Network\": \"${ARG_MAIN_STACK_NETWORK}\",
-    \"WorkingDir\": \"${ARG_MAIN_STACK_DIR}\",
-    \"CreatedAt\": \"${current_time}\",
-    \"UpdatedAt\": \"${current_time}\",
-    \"Services\": []
-  }
-]"
-
-echo "${persistence_template}" > "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
-echo "'${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' file created"
 sleep 1
 
 if [[ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]]; then
