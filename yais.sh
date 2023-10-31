@@ -305,13 +305,9 @@ if [ -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]; then
   echo "Persistence file '${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' already exists."
   echo "Checking values from current persistence file..."
   stacks_json=$(cat "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json")
-  echo "$stacks_json"
-  stack_name=$(echo "$(echo "$stacks_json" |grep -o '"Name": "[^"]*' | sed 's/"Name": "//')" | cut -d ' ' -f 1)
-  echo "$stack_name"
+  stack_name=$(echo $(echo "$stacks_json" |grep -o '"Name": "[^"]*' | sed 's/"Name": "//') | cut -d ' ' -f 1)
   network=$(echo "$stacks_json" | grep -o '"Network": "[^"]*' | sed 's/"Network": "//')
-  echo "$network"
-  working_dir=$(echo "$(echo "$stacks_json" | grep -o '"WorkingDir": "[^"]*' | sed 's/"WorkingDir": "//')" | cut -d ' ' -f 1)
-  echo "$working_dir"
+  working_dir=$(echo $(echo "$stacks_json" | grep -o '"WorkingDir": "[^"]*' | sed 's/"WorkingDir": "//') | cut -d ' ' -f 1)
   if [[ ${ARG_MAIN_STACK_NAME} == "$stack_name" && ${ARG_MAIN_STACK_DIR} == "$working_dir" && ${ARG_MAIN_STACK_NETWORK} == "$network" ]]; then
      echo "using stacks.json from ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
   else
