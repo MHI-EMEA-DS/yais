@@ -18,7 +18,6 @@ ARG_CHARTMAN_UI_DATA='/chartman-ui'
 ARG_CHARTMAN_UI_CONTAINER='chartman_docker_operator_ui'
 ARG_CHARTMAN_UI_IMAGE='chartman/docker-operator-ui'
 ARG_CHARTMAN_UI_IMAGE_TAG=''
-ARG_VALUES_JSON_FILE=''
 
 current_time=$(date +"%Y-%m-%dT%H:%M:%S")
 stack_id=$(uuidgen)
@@ -70,8 +69,6 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "                        | [Required]"
   echo "  --ChartmanUiData      | Directory name to store all Chartman Docker Operator UI related data"
   echo "                        | Default: '/chartman-operator'"
-  echo "  --ValuesFile          | Path to file containing default values.json for deployment"
-  echo "                        | Default: '' (empty)"
   echo "  --help                | Display help"
   exit
 fi
@@ -124,8 +121,6 @@ do
       ARG_CHARTMAN_UI_IMAGE="${arg}"
     elif [[ $keyName == '--chartmanuiimagetag' ]]; then
       ARG_CHARTMAN_UI_IMAGE_TAG="${arg}"
-    elif [[ $keyName == '--valuesfile' ]]; then
-      ARG_VALUES_JSON_FILE="${arg}"
     elif [[ $keyName == '--chartmanuiports' ]]; then
       ARG_CHARTMAN_UI_PORTS="${arg}"
     else
@@ -221,9 +216,6 @@ echo "GUI Data Directory:      ${ARG_CHARTMAN_UI_DATA}"
 echo "Docker Registry:         ${ARG_DOCKER_REGISTRY_URL}"
 echo "Docker registry user:    ${ARG_DOCKER_REGISTRY_USER}"
 echo "Docker registry token:   ***********"
-if [[ $ARG_MAIN_SERVICE_DIR != '' ]]; then
-  echo "Values file:             ${ARG_VALUES_JSON_FILE}"
-fi
 echo ""
 sleep 1
 
@@ -302,53 +294,6 @@ else
   exit
 fi
 
-# -------------------------
-# Validate values json file
-# -------------------------
-
-valuesContent="{}"
-
-if [ ! -f "${ARG_MAIN_SERVICE_DIR}/values.json" ]; then
-  echo "values.json file was not found in ${ARG_MAIN_SERVICE_DIR}."
-  if [[ $ARG_VALUES_JSON_FILE == '' ]]; then
-    echo "values.json file was not provided in the script."
-    echo "Skipping values.json initialization"
-  else
-    if [ ! -f "${ARG_VALUES_JSON_FILE}" ]; then
-      echo "Provided path to values.json file is not valid. File not found".
-      echo "Provide correct file path or skip the parameter"
-      exit
-    fi
-    echo "values.json file was provided. Initializing..."
-    cp $ARG_VALUES_JSON_FILE "${ARG_MAIN_SERVICE_DIR}/values.json"
-    valuesContent=$(cat "${ARG_VALUES_JSON_FILE}")
-  fi
-else
-  echo "values.json file was found in ${ARG_MAIN_SERVICE_DIR}."
-  if [[ $ARG_VALUES_JSON_FILE != '' ]]; then
-    echo "New values.json file provided: ${ARG_VALUES_JSON_FILE}"
-    if [ ! -f "${ARG_VALUES_JSON_FILE}" ]; then
-      echo "Provided file ${ARG_VALUES_JSON_FILE} was not found. Please provide correct file."
-      exit
-    else
-      echo "Values.Json file has been provided but existing values.json was found. Creating backup file..."
-      valuesContent=$(cat "${ARG_VALUES_JSON_FILE}")
-      backup_time=$(date +"%Y%m%d%H%M%S")
-      cp "${ARG_MAIN_SERVICE_DIR}/values.json" "${ARG_MAIN_SERVICE_DIR}/backup_${backup_time}_values.json"
-      cp "${ARG_VALUES_JSON_FILE}" "${ARG_MAIN_SERVICE_DIR}/values.json"
-    fi
-  else
-    echo "using values.json from ${ARG_MAIN_SERVICE_DIR}/values.json"
-    valuesContent=$(cat "${ARG_MAIN_SERVICE_DIR}/values.json")
-  fi
-fi
-
-# replace all occurences of " (double-quote) to '\u0022'
-# persistence file is a json that includes another nested json
-# as a value for values.json - we need to replace '"' to '\u022'
-# to ensure value of default values.json is read correctly
-valuesContent=$(echo $valuesContent | sed 's/"/\\u0022/g')
-
 # ------------------------------------
 # Prepare config and persistence files
 # ------------------------------------
@@ -359,10 +304,14 @@ sleep 1
 if [ -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]; then
   echo "Persistence file '${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' already exists."
   echo "Checking values from current persistence file..."
-  json=$(cat "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json")
-  stack_name=$(echo "$(echo "$json" |grep -o '"Name": "[^"]*' | sed 's/"Name": "//')" | cut -d ' ' -f 1)
-  network=$(echo "$json" | grep -o '"Network": "[^"]*' | sed 's/"Network": "//')
-  working_dir=$(echo "$(echo "$json" | grep -o '"WorkingDir": "[^"]*' | sed 's/"WorkingDir": "//')" | cut -d ' ' -f 1)
+  stacks_json=$(cat "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json")
+  echo "$stacks_json"
+  stack_name=$(echo "$(echo "$stacks_json" |grep -o '"Name": "[^"]*' | sed 's/"Name": "//')" | cut -d ' ' -f 1)
+  echo "$stack_name"
+  network=$(echo "$stacks_json" | grep -o '"Network": "[^"]*' | sed 's/"Network": "//')
+  echo "$network"
+  working_dir=$(echo "$(echo "$stacks_json" | grep -o '"WorkingDir": "[^"]*' | sed 's/"WorkingDir": "//')" | cut -d ' ' -f 1)
+  echo "$working_dir"
   if [[ ${ARG_MAIN_STACK_NAME} == "$stack_name" && ${ARG_MAIN_STACK_DIR} == "$working_dir" && ${ARG_MAIN_STACK_NETWORK} == "$network" ]]; then
      echo "using stacks.json from ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
   else
