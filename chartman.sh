@@ -62,7 +62,9 @@ fetch_run_parameters() {
     runParametersOutput="$fetchParameters"
     read_run_parameters "$runParametersOutput"
   else
-    trace "$fetchParameters"
+    if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
+        echo "$fetchParameters" >> $tracesFilePath
+    fi
     output=$fetchParameters
   fi
 }
