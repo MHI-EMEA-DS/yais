@@ -14,6 +14,35 @@ if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
   tracesFilePath=".chartman-traces.log"
 fi
 
+SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/main/chartman.sh"
+
+CURRENT_SCRIPT="/usr/local/bin/chartman"
+
+function compare_versions() {
+    # Get the MD5 hash of the current script
+    current_md5=$(md5sum "$CURRENT_SCRIPT" | awk '{print $1}')
+
+    # Download the new script and get its MD5 hash
+    new_script=$(mktemp)
+    curl -s "SCRIPT_URL" -o "$new_script"
+    new_md5=$(md5sum "$new_script" | awk '{print $1}')
+
+    # Compare the MD5 hashes
+    if [[ "$current_md5" != "$new_md5" ]]; then
+        return 0  # Different versions, return true
+    else
+        return 1  # Same version, return false
+    fi
+}
+
+if compare_versions; then
+    echo "New version available. Downloading and executing..."
+    # Download and execute the new script
+    curl -s "SCRIPT_URL" | bash
+else
+    echo "No new version available."
+fi
+
 trace() {
   if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
     echo "$1"
