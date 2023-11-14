@@ -17,7 +17,7 @@ ARG_CHARTMAN_UI_PORT=2314
 ARG_CHARTMAN_UI_PORTS=''
 ARG_CHARTMAN_UI_DATA='/chartman-ui'
 ARG_CHARTMAN_UI_CONTAINER='chartman_docker_operator_ui'
-ARG_CHARTMAN_UI_IMAGE='chartman/docker-operator-ui'
+ARG_CHARTMAN_UI_IMAGE=''
 ARG_CHARTMAN_UI_IMAGE_TAG=''
 ARG_VALUES_JSON_FILE=''
 
@@ -203,6 +203,9 @@ if [[ $ARG_DOCKER_REGISTRY_PASSWORD == '' ]]; then
     echo "Docker registry token cannot be empty"
     exit
   fi
+fi
+if [[ $ARG_CHARTMAN_UI_IMAGE == '' ]]; then
+  ARG_CHARTMAN_UI_IMAGE="$ARG_DOCKER_REGISTRY_URL/docker-operator-ui"
 fi
 
 echo "Starting Chartman UI with parameters:"
