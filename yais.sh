@@ -77,7 +77,7 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "                        | Default: '/chartman-operator'"
   echo "  --ValuesFile          | Path to file containing default values.json for deployment"
   echo "                        | Default: '' (empty)"
-  echo "  --NpmRcFile          | Path to file containing default values.json for deployment"
+  echo "  --NpmRcFile           | Path to file containing default values.json for deployment"
   echo "                        | Default: '\$HOME/.npmrc' (empty)"
   echo "  --help                | Display help"
   exit
