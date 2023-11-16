@@ -14,20 +14,17 @@ if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
   tracesFilePath=".chartman-traces.log"
 fi
 
-SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/main/chartman.sh"
+SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/GCCP-7839/chartman.sh"
 
 CURRENT_SCRIPT="/usr/local/bin/chartman"
 
 function compare_versions() {
-    # Get the MD5 hash of the current script
     current_md5=$(md5sum "$CURRENT_SCRIPT" | awk '{print $1}')
 
-    # Download the new script and get its MD5 hash
     new_script=$(mktemp)
     curl -s "SCRIPT_URL" -o "$new_script"
     new_md5=$(md5sum "$new_script" | awk '{print $1}')
 
-    # Compare the MD5 hashes
     if [[ "$current_md5" != "$new_md5" ]]; then
         return 0  # Different versions, return true
     else
@@ -38,14 +35,10 @@ function compare_versions() {
 if compare_versions; then
     echo "New version available."
     read -p "Do you want to download the file? (yes/no): " choice
-
-    if [[ "$choice" == "no" ]]; then
-      echo "Continuing execution..."
-      # Add your code here to continue executing
-    else
-      sudo curl -o $CURRENT_SCRIPT $SCRIPT_URL
-      cat $CURRENT_SCRIPT > $0
-      bash $0
+    if [[ "$choice" == "yes" ]]; then
+       curl -o $CURRENT_SCRIPT $SCRIPT_URL
+       cat $CURRENT_SCRIPT > $0
+       bash $0
     fi
 else
     echo "No new version available."
