@@ -37,8 +37,7 @@ if compare_versions; then
     read -p "Do you want to download the file? (yes/no): " choice
     if [[ "$choice" == "yes" ]]; then
        curl -o $CURRENT_SCRIPT $SCRIPT_URL
-       cat $CURRENT_SCRIPT > $0
-       bash $0
+       exit 0
     fi
 else
     echo "No new version available."
