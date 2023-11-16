@@ -36,9 +36,17 @@ function compare_versions() {
 }
 
 if compare_versions; then
-    echo "New version available. Downloading and executing..."
-    # Download and execute the new script
-    curl -s "SCRIPT_URL" | bash
+    echo "New version available."
+    read -p "Do you want to download the file? (yes/no): " choice
+
+    if [[ "$choice" == "no" ]]; then
+      echo "Continuing execution..."
+      # Add your code here to continue executing
+    else
+      sudo curl -o $CURRENT_SCRIPT $SCRIPT_URL
+      cat $CURRENT_SCRIPT > $0
+      bash $0
+    fi
 else
     echo "No new version available."
 fi
