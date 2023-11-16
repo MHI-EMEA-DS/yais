@@ -70,6 +70,7 @@ check_file_modified_within_seconds() {
   fi
 }
 
+output=""
 read_run_parameters() {
   runParameters="$1"
 
@@ -83,12 +84,17 @@ fetch_run_parameters() {
 
   trace "Fetching run parameters with version $version"
 
-  fetchParameters=`docker run --rm -e CHARTMAN_DOCKER_REGISTRY_TOKEN=$CHARTMAN_DOCKER_REGISTRY_TOKEN -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$version internal get-run-parameters --image-url $dockerImage $versionRequest 2>>"$tracesFilePath"`
+  fetchParameters=`docker run --rm -e CHARTMAN_DOCKER_REGISTRY_TOKEN=$CHARTMAN_DOCKER_REGISTRY_TOKEN -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$version internal get-run-parameters --image-url $dockerImage $versionRequest 2>&1`
   runSucceed=$?
 
   if [ "$runSucceed" -eq 0 ]; then
     runParametersOutput="$fetchParameters"
     read_run_parameters "$runParametersOutput"
+  else
+    if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
+        echo "$fetchParameters" >> $tracesFilePath
+    fi
+    output=$fetchParameters
   fi
 }
 
@@ -149,5 +155,11 @@ resolvedArgs=$(eval echo \"$runDockerArgs\")
 
 trace "Resolved args: $resolvedArgs"
 trace "docker run --rm $dockerArgs $resolvedArgs -w $PWD $dockerImage:$requestedVersion"
+
+
+if [ "$requestedVersion" == "" ]; then
+  echo "$output"
+  exit 1
+fi
 
 docker run --rm $dockerArgs $resolvedArgs -w $PWD $dockerImage:$requestedVersion "$@"
