@@ -14,33 +14,25 @@ if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
   tracesFilePath=".chartman-traces.log"
 fi
 
-SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/GCCP-7839/chartman.sh"
+url="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/GCCP-7839/chartman.sh"
+existing_file="/usr/local/bin/chartman"
 
-CURRENT_SCRIPT="/usr/local/bin/chartman"
+curl_output=$(curl -s "$url")
 
-function compare_versions() {
-    current_md5=$(md5sum "$CURRENT_SCRIPT" | awk '{print $1}')
+diff_output=$(diff -q <(echo "$curl_output") "$existing_file")
 
-    new_script=$(mktemp)
-    curl -s "SCRIPT_URL" -o "$new_script"
-    new_md5=$(md5sum "$new_script" | awk '{print $1}')
-
-    if [[ "$current_md5" != "$new_md5" ]]; then
-        return 0  # Different versions, return true
-    else
-        return 1  # Same version, return false
-    fi
-}
-
-if compare_versions; then
-    echo "New version available."
-    read -p "Do you want to download the file? (yes/no): " choice
-    if [[ "$choice" == "yes" ]]; then
-       curl -o $CURRENT_SCRIPT $SCRIPT_URL
-       exit 0
-    fi
+if [ $? -eq 0 ]; then
+  echo "Files are identical."
 else
-    echo "No new version available."
+  echo "Files are different."
+
+  read -p "Do you want to download and replace the file? (y/n) " choice
+  if [[ $choice == "y" || $choice == "Y" ]]; then
+    echo "$curl_output" > "$existing_file"
+    echo "File downloaded and replaced."
+  else
+    echo "File not replaced."
+  fi
 fi
 
 trace() {
