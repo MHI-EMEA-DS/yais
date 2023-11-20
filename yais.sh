@@ -205,7 +205,7 @@ if [[ $ARG_DOCKER_REGISTRY_PASSWORD == '' ]]; then
   fi
 fi
 if [[ $ARG_CHARTMAN_UI_IMAGE == '' ]]; then
-  ARG_CHARTMAN_UI_IMAGE="$ARG_DOCKER_REGISTRY_URL/docker-operator-ui"
+  ARG_CHARTMAN_UI_IMAGE="$ARG_DOCKER_REGISTRY_URL/chartman/docker-operator-ui"
 fi
 
 echo "Starting Chartman UI with parameters:"
