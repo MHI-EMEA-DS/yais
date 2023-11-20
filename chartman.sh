@@ -18,13 +18,13 @@ SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/GCCP-7839/chartma
 SCRIPT_LOCATION="/usr/local/bin/chartman"
 TMP_FILE=$(mktemp -p "" "XXXXX.sh")
 
+
 curl -s -L "$SCRIPT_URL" > "$TMP_FILE"
 curl_output=$(curl -s "$url")
-
 diff_output=$(diff -q <(echo "$curl_output") "$SCRIPT_LOCATION")
 
 if [ $? -eq 0 ]; then
-  rm -f "$TMP_FILE"
+  echo "You use latest version of script"
 else
   echo "New version of script available"
   ABS_SCRIPT_PATH=$(readlink -f "$SCRIPT_LOCATION")
@@ -32,7 +32,6 @@ else
   if [[ $choice == "y" || $choice == "Y" ]]; then
     echo "cp \"$TMP_FILE\" \"$ABS_SCRIPT_PATH\"" > updater.sh
     echo "rm -f \"$TMP_FILE\"" >> updater.sh
-    echo "echo "new version downloaded""
 
     chmod +x ~/updater.sh
     chmod +x "$TMP_FILE"
