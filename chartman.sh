@@ -14,26 +14,36 @@ if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
   tracesFilePath=".chartman-traces.log"
 fi
 
-url="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/GCCP-7839/chartman.sh"
-existing_file="/usr/local/bin/chartman"
+SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/GCCP-7839/chartman.sh"
+SCRIPT_LOCATION="/usr/local/bin/chartman"
+TMP_FILE=$(mktemp -p "" "XXXXX.sh")
 
-curl_output=$(curl -s "$url")
+curl -s -L "$SCRIPT_URL" > "$TMP_FILE"
 
-diff_output=$(diff -q <(echo "$curl_output") "$existing_file")
+diff_output=$(diff -q <(echo "$TMP_FILE") "$SCRIPT_LOCATION")
 
 if [ $? -eq 0 ]; then
-  echo "Files are identical."
+  echo "You are using the latest version of the script"
 else
-  echo "Files are different."
-
+  echo "New version available"
+  ABS_SCRIPT_PATH=$(readlink -f "$SCRIPT_LOCATION")
   read -p "Do you want to download and replace the file? (y/n) " choice
   if [[ $choice == "y" || $choice == "Y" ]]; then
-    echo "$curl_output" > "$existing_file"
-    echo "File downloaded and replaced."
-  else
-    echo "File not replaced."
+    echo "cp \"$TMP_FILE\" \"$ABS_SCRIPT_PATH\"" > updater.sh
+    echo "rm -f \"$TMP_FILE\"" >> updater.sh
+    echo "echo Running script again: `basename ${SCRIPT_LOCATION}`" >>  updater.sh
+    echo "exec \"$ABS_SCRIPT_PATH\"" >> updater.sh
+
+    chmod +x updater.sh
+    chmod +x "$TMP_FILE"
+    exec sudo updater.sh
+    update "$@"
+    echo "$@"
   fi
 fi
+
+update "$@"
+echo "$@"
 
 trace() {
   if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
