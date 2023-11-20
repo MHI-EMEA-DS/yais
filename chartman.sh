@@ -23,7 +23,7 @@ curl -s -L "$SCRIPT_URL" > "$TMP_FILE"
 diff_output=$(diff -q <(echo "$TMP_FILE") "$SCRIPT_LOCATION")
 
 if [ $? -eq 0 ]; then
-  echo "You are using the latest version of the script"
+  rm -f "$TMP_FILE"
 else
   echo "New version available"
   ABS_SCRIPT_PATH=$(readlink -f "$SCRIPT_LOCATION")
@@ -31,19 +31,14 @@ else
   if [[ $choice == "y" || $choice == "Y" ]]; then
     echo "cp \"$TMP_FILE\" \"$ABS_SCRIPT_PATH\"" > updater.sh
     echo "rm -f \"$TMP_FILE\"" >> updater.sh
-    echo "echo Running script again: `basename ${SCRIPT_LOCATION}`" >>  updater.sh
-    echo "exec \"$ABS_SCRIPT_PATH\"" >> updater.sh
 
-    chmod +x updater.sh
+    chmod +x ~/updater.sh
     chmod +x "$TMP_FILE"
-    exec sudo updater.sh
+    exec ~/updater.sh
     update "$@"
     echo "$@"
   fi
 fi
-
-update "$@"
-echo "$@"
 
 trace() {
   if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
