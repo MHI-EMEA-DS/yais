@@ -31,8 +31,6 @@ else
   if [[ $choice == "y" || $choice == "Y" ]]; then
     echo "cp \"$TMP_FILE\" \"$ABS_SCRIPT_PATH\"" > updater.sh
     echo "rm -f \"$TMP_FILE\"" >> updater.sh
-    echo "echo Running script again: `basename ${SCRIPT_LOCATION}`" >> updater.sh
-    echo "exec \"$ABS_SCRIPT_PATH\"" >> updater.sh
 
     chmod +x ~/updater.sh
     chmod +x "$TMP_FILE"
