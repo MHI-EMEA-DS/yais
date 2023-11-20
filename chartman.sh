@@ -17,7 +17,7 @@ fi
 SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/GCCP-7839/chartman.sh"
 SCRIPT_LOCATION="/usr/local/bin/chartman"
 
-curl_output=$(curl -s "$url")
+curl_output=$(curl -s "$SCRIPT_URL")
 diff_output=$(diff -q <(echo "$curl_output") "$SCRIPT_LOCATION")
 
 if [ $? -eq 0 ]; then
