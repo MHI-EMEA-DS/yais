@@ -20,9 +20,7 @@ SCRIPT_LOCATION="/usr/local/bin/chartman"
 curl_output=$(curl -s "$SCRIPT_URL")
 diff_output=$(diff -q <(echo "$curl_output") "$SCRIPT_LOCATION")
 
-if [ $? -eq 0 ]; then
-  echo "You use latest version of script"
-else
+if [ $? -ne 0 ]; then
   echo "New version of script available"
   TMP_FILE=$(mktemp -p "" "XXXXX.sh")
   curl -s -L "$SCRIPT_URL" > "$TMP_FILE"
