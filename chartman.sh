@@ -14,21 +14,21 @@ if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
   tracesFilePath=".chartman-traces.log"
 fi
 
-SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/GCCP-7839/chartman.sh"
+CHARTMAN_SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/GCCP-7839/chartman.sh"
 SCRIPT_LOCATION="/usr/local/bin/chartman"
 
-curl_output=$(curl -s "$SCRIPT_URL")
+curl_output=$(curl -s "$CHARTMAN_SCRIPT_URL")
 diff_output=$(diff -q <(echo "$curl_output") "$SCRIPT_LOCATION")
 
 if [ $? -ne 0 ]; then
   echo "New version of script available"
   TMP_FILE=$(mktemp -p "" "XXXXX.sh")
-  curl -s -L "$SCRIPT_URL" > "$TMP_FILE"
+  curl -s -L "$CHARTMAN_SCRIPT_URL" > "$TMP_FILE"
   ABS_SCRIPT_PATH=$(readlink -f "$SCRIPT_LOCATION")
   read -p "Do you want to download and replace the file? (y/n) " choice
   if [[ $choice == "y" || $choice == "Y" ]]; then
-    echo "cp \"$TMP_FILE\" \"$ABS_SCRIPT_PATH\"" > updater.sh
-    echo "rm -f \"$TMP_FILE\"" >> updater.sh
+    echo "cp \"$TMP_FILE\" \"$ABS_SCRIPT_PATH\"" > ~/updater.sh
+    echo "rm -f \"$TMP_FILE\"" >> ~/updater.sh
 
     chmod +x ~/updater.sh
     chmod +x "$TMP_FILE"
