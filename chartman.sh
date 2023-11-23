@@ -19,13 +19,13 @@ if [ "$CHARTMAN_SCRIPT_AUTOUPDATE" = "1" ]; then
   CHARTMAN_SCRIPT_LOCATION="/usr/local/bin/chartman"
 
   curl_output=$(curl -s "$CHARTMAN_SCRIPT_URL")
-  diff_output=$(diff -q <(echo "$curl_output") "CHARTMAN_SCRIPT_LOCATION")
+  diff_output=$(diff -q <(echo "$curl_output") "$CHARTMAN_SCRIPT_LOCATION")
 
   if [ $? -ne 0 ]; then
-    filename="$(uuidgen).sh"
-    TMP_FILE=$(touch /tmp/chartman/"$filename")
-    curl -s -L "$CHARTMAN_SCRIPT_URL" > "$TMP_FILE"
-    ABS_SCRIPT_PATH=$(readlink -f "CHARTMAN_SCRIPT_LOCATION")
+    TMP_FILE="/tmp/chartman/$(uuidgen)"
+    touch "$TMP_FILE"
+    curl -s -L "$CHARTMAN_SCRIPT_URL" >> "$TMP_FILE"
+    ABS_SCRIPT_PATH=$(readlink -f "$CHARTMAN_SCRIPT_LOCATION")
 
     echo "cp \"$TMP_FILE\" \"$ABS_SCRIPT_PATH\"" > ~/updater.sh
     echo "rm -f \"$TMP_FILE\"" >> ~/updater.sh
