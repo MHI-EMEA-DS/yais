@@ -28,10 +28,9 @@ if [ "$CHARTMAN_SCRIPT_AUTOUPDATE" = "1" ]; then
     ABS_SCRIPT_PATH=$(readlink -f "$CHARTMAN_SCRIPT_LOCATION")
 
     echo "cp \"$TMP_FILE\" \"$ABS_SCRIPT_PATH\"" > ~/updater.sh
-    echo "rm -f \"$TMP_FILE\"" >> ~/updater.sh
+    echo "rm -rf \"$TMP_FILE\"" >> ~/updater.sh
 
     chmod +x ~/updater.sh
-    chmod +x "$TMP_FILE"
     exec ~/updater.sh
   fi
 fi
