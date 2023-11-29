@@ -30,7 +30,6 @@ if [ "$CHARTMAN_SCRIPT_AUTOUPDATE" = "1" ]; then
 
     echo "cp \"$TMP_FILE\" \"$ABS_SCRIPT_PATH\"" > ~/updater.sh
     echo "rm -rf \"$TMP_FILE\"" >> ~/updater.sh
-    echo "echo Running script again: `${SCRIPT_LOCATION}`" >>  ~/updater.sh
     echo "exec \"$ABS_SCRIPT_PATH\"" >> ~/updater.sh
 
     chmod +x ~/updater.sh
