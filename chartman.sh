@@ -15,7 +15,7 @@ if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
 fi
 
 if [ "$CHARTMAN_SCRIPT_AUTOUPDATE" = "1" ]; then
-  CHARTMAN_SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/GCCP-7839/chartman.sh"
+  CHARTMAN_SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/main/chartman.sh"
   CHARTMAN_SCRIPT_LOCATION="/usr/local/bin/chartman"
 
   curl_output=$(curl -s "$CHARTMAN_SCRIPT_URL")
