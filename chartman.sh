@@ -5,7 +5,7 @@
 dockerImage=${CHARTMAN_DOCKER_IMAGE:-docker-registry.ds.mhie.com/chartman}
 versionRequest=${CHARTMAN_VERSION:-3.x}
 cacheTtl=${CHARTMAN_CACHE_TTL:-300}
-minimumRunVersion="3.5.0"
+minimumRunVersion="3.11.0"
 cacheFilePath="/tmp/chartman/request-$versionRequest"
 latestFilePath="/tmp/chartman/latest"
 tracesFilePath="/dev/null"
