@@ -14,6 +14,29 @@ if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
   tracesFilePath=".chartman-traces.log"
 fi
 
+if [ "$CHARTMAN_SCRIPT_AUTOUPDATE" = "1" ]; then
+  CHARTMAN_SCRIPT_URL="https://raw.githubusercontent.com/MHI-EMEA-DS/yais/main/chartman.sh"
+  CHARTMAN_SCRIPT_LOCATION="/usr/local/bin/chartman"
+
+  curl_output=$(curl -s "$CHARTMAN_SCRIPT_URL")
+  diff_output=$(diff -q <(echo "$curl_output") "$CHARTMAN_SCRIPT_LOCATION")
+
+  if [ $? -ne 0 ]; then
+    echo "New Version of chartman script downloaded and updated"
+    TMP_FILE="/tmp/chartman/$(uuidgen)"
+    touch "$TMP_FILE"
+    curl -s -L "$CHARTMAN_SCRIPT_URL" >> "$TMP_FILE"
+    ABS_SCRIPT_PATH=$(readlink -f "$CHARTMAN_SCRIPT_LOCATION")
+
+    echo "cp \"$TMP_FILE\" \"$ABS_SCRIPT_PATH\"" > ~/updater.sh
+    echo "rm -rf \"$TMP_FILE\"" >> ~/updater.sh
+    echo "exec \"$ABS_SCRIPT_PATH\" -V" >> ~/updater.sh
+
+    chmod +x ~/updater.sh
+    exec ~/updater.sh
+  fi
+fi
+
 trace() {
   if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
     echo "$1"
@@ -126,7 +149,6 @@ resolvedArgs=$(eval echo \"$runDockerArgs\")
 
 trace "Resolved args: $resolvedArgs"
 trace "docker run --rm $dockerArgs $resolvedArgs -w $PWD $dockerImage:$requestedVersion"
-
 
 if [ "$requestedVersion" == "" ]; then
   echo "$output"
