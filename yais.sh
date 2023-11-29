@@ -4,10 +4,9 @@ ARG_DOCKER_REGISTRY_URL=''
 ARG_DOCKER_REGISTRY_USER=''
 ARG_DOCKER_REGISTRY_PASSWORD=''
 
-ARG_MAIN_STACK_NAME='SXS_MAIN_SERVICE'
+ARG_MAIN_STACK_NAME='SXS_MAIN_STACK'
 ARG_MAIN_STACK_NETWORK='gccp'
 ARG_MAIN_STACK_DIR='/mhi'
-ARG_MAIN_SERVICE_NAME='SXS_SERVICE'
 ARG_MAIN_SERVICE_DIR='/mhi'
 ARG_MAIN_SERVICE_CHART='@mhie-ds/charts-metals-iog'
 ARG_CHARTMAN_HOME="${HOME}/.chartman"
@@ -19,12 +18,10 @@ ARG_CHARTMAN_UI_DATA='/chartman-ui'
 ARG_CHARTMAN_UI_CONTAINER='chartman_docker_operator_ui'
 ARG_CHARTMAN_UI_IMAGE=''
 ARG_CHARTMAN_UI_IMAGE_TAG=''
-ARG_VALUES_JSON_FILE=''
 ARG_NPMRC_FILE="$HOME/.npmrc"
 
 current_time=$(date +"%Y-%m-%dT%H:%M:%S")
 stack_id=$(uuidgen)
-service_id=$(uuidgen)
 
 ## --------------------------------
 ## Provide help if --help requested
@@ -37,8 +34,6 @@ if [[ "${1,,}" == "--help" ]]; then
   echo ""
   echo "  --StackName           | Name for the default deployment stack."
   echo "                        | Default: 'SXS-MAIN-STACK'"
-  echo "  --ServiceName         | Name for the default deployment service."
-  echo "                        | Default: 'SXS-MAIN-SERVICE'"
   echo "  --StackDir            | Stack base directory"
   echo "                        | Default: '/mhi'"
   echo "  --ServiceDir          | Service base directory. Must be inside or the same as base stack directory."
@@ -75,8 +70,6 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "                        | [Required]"
   echo "  --ChartmanUiData      | Directory name to store all Chartman Docker Operator UI related data"
   echo "                        | Default: '/chartman-operator'"
-  echo "  --ValuesFile          | Path to file containing default values.json for deployment"
-  echo "                        | Default: '' (empty)"
   echo "  --NpmRcFile           | Path to .npmrc file"
   echo "                        | Default: '$HOME/.npmrc'"
   echo "  --help                | Display help"
@@ -101,8 +94,6 @@ do
   else
     if [[ $keyName == '--stackname' ]]; then
       ARG_MAIN_STACK_NAME="${arg}"
-    elif [[ $keyName == '--servicename' ]]; then
-      ARG_MAIN_SERVICE_NAME="${arg}"
     elif [[ $keyName == '--stackdir' ]]; then
       ARG_MAIN_STACK_DIR="${arg}"
     elif [[ $keyName == '--servicedir' ]]; then
@@ -133,8 +124,6 @@ do
       ARG_CHARTMAN_UI_IMAGE="${arg}"
     elif [[ $keyName == '--chartmanuiimagetag' ]]; then
       ARG_CHARTMAN_UI_IMAGE_TAG="${arg}"
-    elif [[ $keyName == '--valuesfile' ]]; then
-      ARG_VALUES_JSON_FILE="${arg}"
     elif [[ $keyName == '--chartmanuiports' ]]; then
       ARG_CHARTMAN_UI_PORTS="${arg}"
     elif [[ $keyName == '--npmrcfile' ]]; then
@@ -242,7 +231,6 @@ echo ""
 echo "Main Stack Name:         ${ARG_MAIN_STACK_NAME}"
 echo "Main Stack Directory:    ${ARG_MAIN_STACK_DIR}"
 echo "Main Stack Network:      ${ARG_MAIN_STACK_NETWORK}"
-echo "Main Service Name:       ${ARG_MAIN_SERVICE_NAME}"
 echo "Main Service Directory:  ${ARG_MAIN_SERVICE_DIR}"
 echo "Main Service Chart:      ${ARG_MAIN_SERVICE_CHART}"
 echo "Chartman home Directory: ${ARG_CHARTMAN_HOME}"
@@ -260,9 +248,6 @@ echo "GUI Data Directory:      ${ARG_CHARTMAN_UI_DATA}"
 echo "Docker Registry:         ${ARG_DOCKER_REGISTRY_URL}"
 echo "Docker registry user:    ${ARG_DOCKER_REGISTRY_USER}"
 echo "Docker registry token:   ***********"
-if [[ $ARG_MAIN_SERVICE_DIR != '' ]]; then
-  echo "Values file:             ${ARG_VALUES_JSON_FILE}"
-fi
 echo ""
 sleep 1
 
@@ -341,53 +326,6 @@ else
   exit
 fi
 
-# -------------------------
-# Validate values json file
-# -------------------------
-
-valuesContent="{}"
-
-if [ ! -f "${ARG_MAIN_SERVICE_DIR}/values.json" ]; then
-  echo "values.json file was not found in ${ARG_MAIN_SERVICE_DIR}."
-  if [[ $ARG_VALUES_JSON_FILE == '' ]]; then
-    echo "values.json file was not provided in the script."
-    echo "Skipping values.json initialization"
-  else
-    if [ ! -f "${ARG_VALUES_JSON_FILE}" ]; then
-      echo "Provided path to values.json file is not valid. File not found".
-      echo "Provide correct file path or skip the parameter"
-      exit
-    fi
-    echo "values.json file was provided. Initializing..."
-    cp $ARG_VALUES_JSON_FILE "${ARG_MAIN_SERVICE_DIR}/values.json"
-    valuesContent=$(cat "${ARG_VALUES_JSON_FILE}")
-  fi
-else
-  echo "values.json file was found in ${ARG_MAIN_SERVICE_DIR}."
-  if [[ $ARG_VALUES_JSON_FILE != '' ]]; then
-    echo "New values.json file provided: ${ARG_VALUES_JSON_FILE}"
-    if [ ! -f "${ARG_VALUES_JSON_FILE}" ]; then
-      echo "Provided file ${ARG_VALUES_JSON_FILE} was not found. Please provide correct file."
-      exit
-    else
-      echo "Values.Json file has been provided but existing values.json was found. Creating backup file..."
-      valuesContent=$(cat "${ARG_VALUES_JSON_FILE}")
-      backup_time=$(date +"%Y%m%d%H%M%S")
-      cp "${ARG_MAIN_SERVICE_DIR}/values.json" "${ARG_MAIN_SERVICE_DIR}/backup_${backup_time}_values.json"
-      cp "${ARG_VALUES_JSON_FILE}" "${ARG_MAIN_SERVICE_DIR}/values.json"
-    fi
-  else
-    echo "using values.json from ${ARG_MAIN_SERVICE_DIR}/values.json"
-    valuesContent=$(cat "${ARG_MAIN_SERVICE_DIR}/values.json")
-  fi
-fi
-
-# replace all occurences of " (double-quote) to '\u0022'
-# persistence file is a json that includes another nested json
-# as a value for values.json - we need to replace '"' to '\u022'
-# to ensure value of default values.json is read correctly
-valuesContent=$(echo $valuesContent | sed 's/"/\\u0022/g')
-
 # ------------------------------------
 # Prepare config and persistence files
 # ------------------------------------
@@ -397,37 +335,33 @@ sleep 1
 
 if [ -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]; then
   echo "Persistence file '${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' already exists."
-  echo "Creating a backup copy of current persistence file..."
-  backup_time=$(date +"%Y%m%d%H%M%S")
-  cp "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" "${ARG_CHARTMAN_UI_DATA}/persistence/backup_${backup_time}_stacks.json"
+  echo "Checking values from current persistence file..."
+  stacks_json=$(cat "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json")
+  stack_name=$(echo $(echo "$stacks_json" |grep -o '"Name": "[^"]*' | sed 's/"Name": "//') | cut -d ' ' -f 1)
+  network=$(echo "$stacks_json" | grep -o '"Network": "[^"]*' | sed 's/"Network": "//')
+  working_dir=$(echo $(echo "$stacks_json" | grep -o '"WorkingDir": "[^"]*' | sed 's/"WorkingDir": "//') | cut -d ' ' -f 1)
+  if [[ ${ARG_MAIN_STACK_NAME} == "$stack_name" && ${ARG_MAIN_STACK_DIR} == "$working_dir" && ${ARG_MAIN_STACK_NETWORK} == "$network" ]]; then
+     echo "using stacks.json from ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
+  else
+     echo "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json contains values different from args"
+     echo "Error: provide the same stack name -- ${stack_name}, working dir -- ${working_dir}, network -- ${network} or remove ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
+     exit
+  fi
+else
+  persistence_template="[
+    {
+      \"Id\": \"${stack_id}\",
+      \"Name\": \"${ARG_MAIN_STACK_NAME}\",
+      \"Network\": \"${ARG_MAIN_STACK_NETWORK}\",
+      \"WorkingDir\": \"${ARG_MAIN_STACK_DIR}\",
+      \"CreatedAt\": \"${current_time}\",
+      \"UpdatedAt\": \"${current_time}\",
+      \"Services\": []
+    }
+  ]"
+  echo "${persistence_template}" > "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
+  echo "'${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' file created"
 fi
-
-valuesContent=$(echo $valuesContent | sed 's/"/\\u0022/g')
-persistence_template="[
-  {
-    \"Id\": \"${stack_id}\",
-    \"Name\": \"${ARG_MAIN_STACK_NAME}\",
-    \"Network\": \"${ARG_MAIN_STACK_NETWORK}\",
-    \"WorkingDir\": \"${ARG_MAIN_STACK_DIR}\",
-    \"CreatedAt\": \"${current_time}\",
-    \"UpdatedAt\": \"${current_time}\",
-    \"Services\": [
-      {
-        \"Id\": \"${service_id}\",
-        \"Name\": \"${ARG_MAIN_SERVICE_NAME}\",
-        \"WorkingDir\": \"${ARG_MAIN_SERVICE_DIR}\",
-        \"WebAccess\": null,
-        \"Chart\": \"${ARG_MAIN_SERVICE_CHART}\",
-        \"Values\": \"${valuesContent}\",
-        \"CreatedAt\": \"${current_time}\",
-        \"UpdatedAt\": \"${current_time}\"
-      }
-    ]
-  }
-]"
-
-echo "${persistence_template}" > "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
-echo "'${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' file created"
 sleep 1
 
 if [[ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]]; then
