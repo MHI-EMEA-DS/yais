@@ -22,7 +22,7 @@ if [ "$CHARTMAN_SCRIPT_AUTOUPDATE" = "1" ]; then
   diff_output=$(diff -q <(echo "$curl_output") "$CHARTMAN_SCRIPT_LOCATION")
 
   if [ $? -ne 0 ]; then
-    echo "New version downloaded and updated"
+    echo "New Version of chartman script downloaded and updated"
     TMP_FILE="/tmp/chartman/$(uuidgen)"
     touch "$TMP_FILE"
     curl -s -L "$CHARTMAN_SCRIPT_URL" >> "$TMP_FILE"
