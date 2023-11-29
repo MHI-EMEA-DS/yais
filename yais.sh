@@ -16,8 +16,9 @@ ARG_CHARTMAN_UI_PORT=2314
 ARG_CHARTMAN_UI_PORTS=''
 ARG_CHARTMAN_UI_DATA='/chartman-ui'
 ARG_CHARTMAN_UI_CONTAINER='chartman_docker_operator_ui'
-ARG_CHARTMAN_UI_IMAGE='chartman/docker-operator-ui'
+ARG_CHARTMAN_UI_IMAGE=''
 ARG_CHARTMAN_UI_IMAGE_TAG=''
+ARG_NPMRC_FILE="$HOME/.npmrc"
 
 current_time=$(date +"%Y-%m-%dT%H:%M:%S")
 stack_id=$(uuidgen)
@@ -69,6 +70,8 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "                        | [Required]"
   echo "  --ChartmanUiData      | Directory name to store all Chartman Docker Operator UI related data"
   echo "                        | Default: '/chartman-operator'"
+  echo "  --NpmRcFile           | Path to .npmrc file"
+  echo "                        | Default: '$HOME/.npmrc'"
   echo "  --help                | Display help"
   exit
 fi
@@ -123,6 +126,15 @@ do
       ARG_CHARTMAN_UI_IMAGE_TAG="${arg}"
     elif [[ $keyName == '--chartmanuiports' ]]; then
       ARG_CHARTMAN_UI_PORTS="${arg}"
+    elif [[ $keyName == '--npmrcfile' ]]; then
+      ARG_NPMRC_FILE="${arg}"
+      if [ ! -f "$file_path" ]; then
+        echo "Provided npmrc file path is not valid. File not found".
+        echo "Provide correct file path or skip the parameter"
+        exit
+      else
+        echo "Using provided npmrc file: ${ARG_NPMRC_FILE}"
+      fi
     else
       echo "Unknown parameter provided: ${keyName}"
       exit
@@ -132,6 +144,23 @@ do
     isKey=1
   fi
 done
+
+if [ ! -f "$ARG_NPMRC_FILE" ]; then
+        echo "@mhie-ds:registry=https://pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/
+; begin auth token
+//pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/:username=NpmMhi
+//pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/:_password=<your_npm_pat>
+//pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/:email=CiUser01@ds.mhie.com
+//pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/:username=NpmMhi
+//pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/:_password=<your_npm_pat>
+//pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/:email=CiUser01@ds.mhie.com
+; end auth token
+" > "$ARG_NPMRC_FILE"
+        echo ".npmrc file was not found in $ARG_NPMRC_FILE."
+        echo "template .npmrc file was created in $ARG_NPMRC_FILE."
+        echo "please update it with your credentials"
+        exit
+    fi
 
 # ----------------------------------------------------------
 # Checking for the presence of a file with user and password
@@ -192,6 +221,9 @@ if [[ $ARG_DOCKER_REGISTRY_PASSWORD == '' ]]; then
     echo "Docker registry token cannot be empty"
     exit
   fi
+fi
+if [[ $ARG_CHARTMAN_UI_IMAGE == '' ]]; then
+  ARG_CHARTMAN_UI_IMAGE="$ARG_DOCKER_REGISTRY_URL/chartman/docker-operator-ui"
 fi
 
 echo "Starting Chartman UI with parameters:"
@@ -387,7 +419,7 @@ runChartmanOperatorCommand () {
       PUBLIC_PORTS_ASSIGNMENT="127.0.0.1:$ARG_CHARTMAN_UI_PORT"
     fi
 
-    ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER $PORT_MAPPING -e PUBLIC_PORTS_ASSIGNMENT=$PUBLIC_PORTS_ASSIGNMENT -v $HOME/.npmrc:/root/.npmrc $COMMON_ARGS server"
+    ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER $PORT_MAPPING -e PUBLIC_PORTS_ASSIGNMENT=$PUBLIC_PORTS_ASSIGNMENT -v $ARG_NPMRC_FILE:/root/.npmrc $COMMON_ARGS server"
   fi
 
   docker run $ARGS
