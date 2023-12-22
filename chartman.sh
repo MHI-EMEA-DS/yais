@@ -64,11 +64,6 @@ check_file_modified_within_seconds() {
   fi
 }
 
-if [ ! -f "$HOME/.npmrc" ]; then
-  echo "Error: .npmrc file does not exist!"
-  exit 1
-fi
-
 output=""
 read_run_parameters() {
   runParameters="$1"
