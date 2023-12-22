@@ -65,7 +65,7 @@ check_file_modified_within_seconds() {
 }
 
 if [ ! -f "$HOME/.npmrc" ]; then
-  echo "Error: .npmrc file does not exist!"
+  echo "Error: .npmrc file does not exist at path $HOME/.npmrc"
   exit 1
 fi
 
