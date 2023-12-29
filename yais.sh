@@ -154,8 +154,7 @@ if [ ! -f "$ARG_NPMRC_FILE" ]; then
 //pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/:username=NpmMhi
 //pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/:_password=<your_npm_pat>
 //pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/:email=CiUser01@ds.mhie.com
-; end auth token
-" > "$ARG_NPMRC_FILE"
+; end auth token" > "$ARG_NPMRC_FILE"
     echo ".npmrc file was not found in $ARG_NPMRC_FILE."
     echo "template .npmrc file was created in $ARG_NPMRC_FILE."
     echo "please update it with your credentials"
@@ -183,7 +182,6 @@ if [[ $ARG_CHARTMAN_UI_IMAGE_TAG == '' ]]; then
     exit
   fi
 fi
-
 if [[ $ARG_DOCKER_REGISTRY_URL == '' ]]; then
   read -p "Docker registry url: " ARG_DOCKER_REGISTRY_URL
   if [[ $ARG_DOCKER_REGISTRY_URL == '' ]]; then
@@ -191,7 +189,6 @@ if [[ $ARG_DOCKER_REGISTRY_URL == '' ]]; then
     exit
   fi
 fi
-
 if [[ $ARG_DOCKER_REGISTRY_USER == '' ]]; then
   read -p "Docker registry user: " ARG_DOCKER_REGISTRY_USER
   if [[ $ARG_DOCKER_REGISTRY_USER == '' ]]; then
@@ -219,7 +216,11 @@ echo "Main Service Directory:  ${ARG_MAIN_SERVICE_DIR}"
 echo "Main Service Chart:      ${ARG_MAIN_SERVICE_CHART}"
 echo "Chartman home Directory: ${ARG_CHARTMAN_HOME}"
 echo "GUI User:                ${ARG_CHARTMAN_UI_USER}"
-echo "GUI Password:            ***********"
+if [[ $ARG_CHARTMAN_UI_PASSWORD == '' ]]; then
+    echo "GUI Password:"
+else
+    echo "GUI Password:            ***********"
+fi
 if [[ -n $ARG_CHARTMAN_UI_PORTS ]]; then
   echo "GUI Ports:               ${ARG_CHARTMAN_UI_PORTS}"
 else
