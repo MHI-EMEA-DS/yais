@@ -57,9 +57,9 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "  --DockerRegistry      | Url of the docker registry."
   echo "                        | [REQUIRED]"
   echo "  --User                | User for Chartman Docker Operator UI."
-  echo "                        | "
+  echo "                        | [OPTIONAL]"
   echo "  --Password            | Password for Chartman Docker Operator UI"
-  echo "                        | "
+  echo "                        | [OPTIONAL]"
   echo "  --RegistryUser        | User for docker registry."
   echo "                        | User for registry"
   echo "  --RegistryPassword    | Password/Token for docker registry."
@@ -67,7 +67,7 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "  --ChartmanUiImage     | Name of Chartman Docker Operator UI iamge."
   echo "                        | Default: 'chartman-operator-ui'"
   echo "  --ChartmanUiImageTag  | Version of Chartman Docker Operator UI image to be installed."
-  echo "                        | [Required]"
+  echo "                        | [REQUIRED]"
   echo "  --ChartmanUiData      | Directory name to store all Chartman Docker Operator UI related data"
   echo "                        | Default: '/chartman-operator'"
   echo "  --NpmRcFile           | Path to .npmrc file"
@@ -146,7 +146,7 @@ do
 done
 
 if [ ! -f "$ARG_NPMRC_FILE" ]; then
-        echo "@mhie-ds:registry=https://pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/
+    echo "@mhie-ds:registry=https://pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/
 ; begin auth token
 //pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/:username=NpmMhi
 //pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/:_password=<your_npm_pat>
@@ -156,36 +156,20 @@ if [ ! -f "$ARG_NPMRC_FILE" ]; then
 //pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/:email=CiUser01@ds.mhie.com
 ; end auth token
 " > "$ARG_NPMRC_FILE"
-        echo ".npmrc file was not found in $ARG_NPMRC_FILE."
-        echo "template .npmrc file was created in $ARG_NPMRC_FILE."
-        echo "please update it with your credentials"
-        exit
-    fi
+    echo ".npmrc file was not found in $ARG_NPMRC_FILE."
+    echo "template .npmrc file was created in $ARG_NPMRC_FILE."
+    echo "please update it with your credentials"
+    exit
+fi
 
 # ----------------------------------------------------------
 # Checking for the presence of a file with user and password
 # ----------------------------------------------------------
 
 USER_FILE_PATH=$ARG_CHARTMAN_UI_DATA/persistence/users.json
+
 if test -f "$USER_FILE_PATH"; then
   echo "Users file exist"
-else
-  echo "File with users doesn't exist $USER_FILE_PATH"
-  if [[ "$ARG_CHARTMAN_UI_USER" == '' ]]; then
-    read -p "Provide user name: " ARG_CHARTMAN_UI_USER
-    if [[ "$ARG_CHARTMAN_UI_USER" == '' ]]; then
-      echo "User name cannot be empty"
-      exit
-    fi
-  fi
-
-  if [[ "$ARG_CHARTMAN_UI_PASSWORD" == '' ]]; then
-    read -p "Provide user password: " ARG_CHARTMAN_UI_PASSWORD
-    if [[ "$ARG_CHARTMAN_UI_PASSWORD" == '' ]]; then
-       echo "User password cannot be empty"
-       exit
-    fi
-  fi
 fi
 
 ## ------------------
