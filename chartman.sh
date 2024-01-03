@@ -155,4 +155,9 @@ if [ "$requestedVersion" == "" ]; then
   exit 1
 fi
 
+# if nvidia docker runtime is installed, use it, to provide gpu info to charts
+if [ -f "/usr/bin/nvidia-container-runtime" ]; then
+  dockerArgs="$dockerArgs --runtime=nvidia --gpus all"
+fi
+
 docker run --rm $dockerArgs $resolvedArgs -w $PWD $dockerImage:$requestedVersion "$@"
