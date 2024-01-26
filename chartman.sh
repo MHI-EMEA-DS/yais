@@ -160,8 +160,23 @@ if [ "$requestedVersion" == "" ]; then
   exit 1
 fi
 
+function isNvidiaEnabled() {
+    # Check if /usr/bin/nvidia-container-runtime exists
+    if [ ! -f "/usr/bin/nvidia-container-runtime" ]; then
+        return 1  # Set exit status to 1, indicating failure
+    fi
+
+    # Try executing nvidia-smi
+    if ! nvidia-smi &>/dev/null; then
+        return 1  # Set exit status to 1, indicating failure
+    fi
+
+    return 0  # Set exit status to 0, indicating success
+}
+
+isNvidiaEnabled
 # if nvidia docker runtime is installed, use it, to provide gpu info to charts
-if [ -f "/usr/bin/nvidia-container-runtime" ]; then
+if [ $? -eq 0 ]; then
   dockerArgs="$dockerArgs --runtime=nvidia --gpus all"
 fi
 
