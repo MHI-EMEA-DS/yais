@@ -116,7 +116,7 @@ resolve_run_parameters() {
     echo $response >&2
     return 1
   fi
-  latestVersion=`echo "$response" | sed -n 's/^.*chartman v\([^[:space:]]*\).*/\1/p'`
+  latestVersion=`echo "$response" | sed -n 's/^.*chartman v\([^[:space:]+]*\).*/\1/p'`
   runDockerArgs=`echo "$response" | sed -n 's/^.*DOCKER_ARGS=//p'`
 
   response=`docker run --rm $dockerImage:$versionRequest --version 2>&1`
@@ -127,7 +127,7 @@ resolve_run_parameters() {
     return 1
   fi
 
-  requestedVersion=`echo "$response" | sed -n 's/^.*chartman v\([^[:space:]]*\).*/\1/p'`
+  requestedVersion=`echo "$response" | sed -n 's/^.*chartman v\([^[:space:]+]*\).*/\1/p'`
 
   # write cache
   echo "DOCKER_ARGS=$runDockerArgs" > $cacheFilePath
