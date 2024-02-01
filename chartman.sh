@@ -84,7 +84,6 @@ read_run_parameters() {
 # latest version used for getting internal arguments
 # when user requested a canary version, latest version = requested canary version
 resolve_run_parameters() {
-  # TODO: run pull operations in parallel
   pullResult=`docker pull $dockerImage:$latestTag 2>&1`
   pullSucceed=$?
   if [ "$pullSucceed" -ne 0 ]; then
