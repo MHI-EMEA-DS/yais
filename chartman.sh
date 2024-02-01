@@ -57,7 +57,6 @@ check_file_modified_within_seconds() {
     file_modified_time=$(stat -f %m "$file_path")
   else
     file_modified_time=$(stat -c %Y "$file_path")
-    stat -c "%Y" filename
   fi
   time_difference=$((current_time - file_modified_time))
 
