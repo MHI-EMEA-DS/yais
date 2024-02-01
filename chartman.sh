@@ -3,7 +3,7 @@
 ### Don't modify this script. If you encountered any problems, please contact P24 Team
 
 dockerImage=${CHARTMAN_DOCKER_IMAGE:-docker-registry.ds.mhie.com/chartman}
-versionRequest=${CHARTMAN_VERSION:-3.x}
+versionRequest=${CHARTMAN_VERSION:-3}
 cacheTtl=${CHARTMAN_CACHE_TTL:-300}
 latestTag="latest"
 cacheFilePath="/tmp/chartman/request-$versionRequest"
@@ -109,7 +109,7 @@ resolve_run_parameters() {
 
   trace "Fetching run parameters with version $latestVersion"
 
-  response=`docker run --rm -e CHARTMAN_DOCKER_REGISTRY_TOKEN=$CHARTMAN_DOCKER_REGISTRY_TOKEN -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$latestVersion internal get-run-parameters --image-url $dockerImage $versionRequest 2>&1`
+  response=`docker run --rm -e CHARTMAN_DOCKER_REGISTRY_TOKEN=$CHARTMAN_DOCKER_REGISTRY_TOKEN -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$latestVersion internal get-run-parameters $dockerImage $versionRequest 2>&1`
   runSucceed=$?
 
   if [ "$runSucceed" -nq 0 ]; then
