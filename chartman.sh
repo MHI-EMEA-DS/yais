@@ -107,7 +107,7 @@ resolve_run_parameters() {
 
   trace "Fetching run parameters with version $latestVersion"
 
-  response=`docker run --rm -e CHARTMAN_DOCKER_REGISTRY_TOKEN=$CHARTMAN_DOCKER_REGISTRY_TOKEN -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$latestVersion internal get-run-parameters $dockerImage $versionRequest 2>&1`
+  response=`docker run --rm -e CHARTMAN_DOCKER_REGISTRY_TOKEN=$CHARTMAN_DOCKER_REGISTRY_TOKEN -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$latestVersion internal get-run-parameters $versionRequest 2>&1`
   runSucceed=$?
 
   if [ "$runSucceed" -nq 0 ]; then
