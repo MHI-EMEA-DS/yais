@@ -1,13 +1,12 @@
 #!/bin/bash
 
-### Don't modify this script. If you encountered any problems, please contact CM Team
+### Don't modify this script. If you encountered any problems, please contact P24 Team
 
 dockerImage=${CHARTMAN_DOCKER_IMAGE:-docker-registry.ds.mhie.com/chartman}
-versionRequest=${CHARTMAN_VERSION:-3.x}
+versionRequest=${CHARTMAN_VERSION:-3}
 cacheTtl=${CHARTMAN_CACHE_TTL:-300}
-minimumRunVersion="3.11.0"
+latestTag="latest"
 cacheFilePath="/tmp/chartman/request-$versionRequest"
-latestFilePath="/tmp/chartman/latest"
 tracesFilePath="/dev/null"
 
 if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
@@ -54,7 +53,11 @@ check_file_modified_within_seconds() {
   fi
 
   current_time=$(date +%s)
-  file_modified_time=$(stat -c %Y "$file_path")
+  if [ "$(uname)" == "Darwin" ]; then
+    file_modified_time=$(stat -f %m "$file_path")
+  else
+    file_modified_time=$(stat -c %Y "$file_path")
+  fi
   time_difference=$((current_time - file_modified_time))
 
   if [ $time_difference -le $seconds_threshold ]; then
@@ -69,7 +72,6 @@ if [ ! -f "$HOME/.npmrc" ]; then
   exit 1
 fi
 
-output=""
 read_run_parameters() {
   runParameters="$1"
 
@@ -78,48 +80,59 @@ read_run_parameters() {
   runDockerArgs=`echo "$runParameters" | sed -n 's/^.*DOCKER_ARGS=//p'`
 }
 
-fetch_run_parameters() {
-  version="$1"
+# requested version - version in semver search format requested by user. Can be: 3.14.0, 3.x or 3.13.0-
+# latest version used for getting internal arguments
+# when user requested a canary version, latest version = requested canary version
+resolve_run_parameters() {
+  pullResult=`docker pull $dockerImage:$latestTag 2>&1`
+  pullSucceed=$?
+  if [ "$pullSucceed" -ne 0 ]; then
+    echo $pullResult >&2
+    return 1
+  fi
 
-  trace "Fetching run parameters with version $version"
+  pullResult=`docker pull $dockerImage:$versionRequest 2>&1`
+  pullSucceed=$?
+  if [ "$pullSucceed" -ne 0 ]; then
+    echo $pullResult >&2
+    return 1
+  fi
 
-  fetchParameters=`docker run --rm -e CHARTMAN_DOCKER_REGISTRY_TOKEN=$CHARTMAN_DOCKER_REGISTRY_TOKEN -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$version internal get-run-parameters --image-url $dockerImage $versionRequest 2>&1`
+  # check for canary version. If so - latest version = canary version
+  if [[ $versionRequest == *-* ]]; then
+    latestVersion=$versionRequest
+  else
+    latestVersion=$latestTag
+  fi
+
+  trace "Fetching run parameters with version $latestVersion"
+
+  response=`docker run --rm -e CHARTMAN_DOCKER_REGISTRY_TOKEN=$CHARTMAN_DOCKER_REGISTRY_TOKEN -v $HOME/.chartman:/root/.chartman -v $HOME/.docker:/root/.docker $dockerImage:$latestVersion internal get-run-parameters $versionRequest 2>&1`
   runSucceed=$?
 
-  if [ "$runSucceed" -eq 0 ]; then
-    runParametersOutput="$fetchParameters"
-    read_run_parameters "$runParametersOutput"
-  else
-    if [ "$CHARTMAN_TRACE_ENABLED" = "1" ]; then
-        echo "$fetchParameters" >> $tracesFilePath
-    fi
-    output=$fetchParameters
+  if [ "$runSucceed" -nq 0 ]; then
+    echo $response >&2
+    return 1
   fi
-}
+  latestVersion=`echo "$response" | sed -n 's/^.*chartman v\([^[:space:]+]*\).*/\1/p'`
+  runDockerArgs=`echo "$response" | sed -n 's/^.*DOCKER_ARGS=//p'`
 
-# retry with a stable run version if restored version failed
-fetch_run_parameters_safe() {
-  fetch_run_parameters "$1"
-  if [ "$runSucceed" -ne 0 ]; then
-    fetch_run_parameters $minimumRunVersion
+  response=`docker run --rm $dockerImage:$versionRequest --version 2>&1`
+  runSucceed=$?
+
+  if [ "$runSucceed" -nq 0 ]; then
+    echo $response >&2
+    return 1
   fi
-}
 
-resolve_run_parameters() {
-  if [ -f "$latestFilePath" ]; then
-      runVersion=$(<"$latestFilePath")
-    else
-      runVersion="$minimumRunVersion"
-    fi
+  requestedVersion=`echo "$response" | sed -n 's/^.*chartman v\([^[:space:]+]*\).*/\1/p'`
 
-    fetch_run_parameters_safe $runVersion
+  # write cache
+  echo "DOCKER_ARGS=$runDockerArgs" > $cacheFilePath
+  echo "LATEST_VERSION=$latestVersion" >> $cacheFilePath
+  echo "REQUESTED_VERSION=$requestedVersion" >> $cacheFilePath
 
-    if [ "$latestVersion" != "$runVersion" ]; then
-      fetch_run_parameters_safe $latestVersion
-      echo "$latestVersion" > $latestFilePath
-    fi
-
-    echo "$runParametersOutput" > $cacheFilePath
+  return 0
 }
 
 trace "Docker Image: $dockerImage"
@@ -130,16 +143,32 @@ dockerArgs=""
 
 if [ "$CHARTMAN_INTERACTIVE" = "1" ]; then dockerArgs="$dockerArgs -it"; fi
 
+# if nvidia docker runtime is installed, use it, to provide gpu info to charts
+if [ -f "/usr/bin/nvidia-container-runtime" ]; then
+  dockerArgs="$dockerArgs --runtime=nvidia --gpus all"
+fi
+
 mkdir -p "/tmp/chartman"
 
+cached=false
 if check_file_modified_within_seconds "$cacheFilePath" "$cacheTtl"; then
   trace "Cache parameters found $cacheFilePath"
   read_run_parameters "$(cat $cacheFilePath)"
-  if [ -z "$requestedVersion" ] || [ -z "$latestVersion" ] || [ -z "$runDockerArgs" ]; then
-    resolve_run_parameters
+  if [ -n "$requestedVersion" ] && [ -n "$latestVersion" ] && [ -n "$runDockerArgs" ]; then
+    cached=true
   fi
-else
-  resolve_run_parameters
+fi
+
+if [ "$cached" = false ]; then
+  resolve_run_parameters_output=$(resolve_run_parameters 2>&1)
+  resolve_parameters_return_code=$?
+
+  if [ "$resolve_parameters_return_code" -ne 0 ]; then
+    echo "$resolve_run_parameters_output"
+    return 1
+  fi
+
+  read_run_parameters "$(cat $cacheFilePath)"
 fi
 
 if [ "$latestVersion" != "$requestedVersion" ]; then
@@ -154,15 +183,5 @@ resolvedArgs=$(eval echo \"$runDockerArgs\")
 
 trace "Resolved args: $resolvedArgs"
 trace "docker run --rm $dockerArgs $resolvedArgs -w $PWD $dockerImage:$requestedVersion"
-
-if [ "$requestedVersion" == "" ]; then
-  echo "$output"
-  exit 1
-fi
-
-# if nvidia docker runtime is installed, use it, to provide gpu info to charts
-if [ -f "/usr/bin/nvidia-container-runtime" ]; then
-  dockerArgs="$dockerArgs --runtime=nvidia --gpus all"
-fi
 
 docker run --rm $dockerArgs $resolvedArgs -w $PWD $dockerImage:$requestedVersion "$@"
