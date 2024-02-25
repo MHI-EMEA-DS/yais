@@ -1,5 +1,14 @@
 #!/usr/bin/bash
 
+getHome() {
+  USE_ORIGINAL=$1
+  if [[ "$USE_ORIGINAL" == "1" && -n "$SUDO_USER" ]]; then
+      echo $(getent passwd "$SUDO_USER" | awk -F: '{print $6}')
+  else
+      echo $HOME
+  fi
+}
+
 ARG_DOCKER_REGISTRY_URL=''
 ARG_DOCKER_REGISTRY_USER=''
 ARG_DOCKER_REGISTRY_PASSWORD=''
@@ -9,7 +18,7 @@ ARG_MAIN_STACK_NETWORK='gccp'
 ARG_MAIN_STACK_DIR='/mhi'
 ARG_MAIN_SERVICE_DIR='/mhi'
 ARG_MAIN_SERVICE_CHART='@mhie-ds/charts-metals-iog'
-ARG_CHARTMAN_HOME="${HOME}/.chartman"
+ARG_CHARTMAN_HOME=""
 ARG_CHARTMAN_UI_USER=''
 ARG_CHARTMAN_UI_PASSWORD=''
 ARG_CHARTMAN_UI_PORT=2314
@@ -18,7 +27,8 @@ ARG_CHARTMAN_UI_DATA='/chartman-ui'
 ARG_CHARTMAN_UI_CONTAINER='chartman_docker_operator_ui'
 ARG_CHARTMAN_UI_IMAGE=''
 ARG_CHARTMAN_UI_IMAGE_TAG=''
-ARG_NPMRC_FILE="$HOME/.npmrc"
+ARG_NPMRC_FILE=""
+ARG_USE_ORIGINAL_HOME_PATH='0'
 
 current_time=$(date +"%Y-%m-%dT%H:%M:%S")
 stack_id=$(uuidgen)
@@ -43,7 +53,7 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "  --ServiceChart        | Name of the main service chart."
   echo "                        | Default: '@mhie-ds/charts-metals-iog'"
   echo "  --ChartmanHome        | Path to custom Chartman home directory."
-  echo "                        | Default: '$HOME/.chartman'"
+  echo "                        | Default: '\$HOME/.chartman', where \$HOME could be the original home path or the sudo user home path, depending on the --UseOriginalHomePath parameter"
   echo "  --ChartmanUiPort      | Port on which Chartman GUI will be served."
   echo "                        | It will be bound to 127.0.0.1 only"
   echo "                        | It is obsolete, Please use ChartmanUiPorts, as it gives more flexibility"
@@ -71,7 +81,9 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "  --ChartmanUiData      | Directory name to store all Chartman Docker Operator UI related data"
   echo "                        | Default: '/chartman-operator'"
   echo "  --NpmRcFile           | Path to .npmrc file"
-  echo "                        | Default: '$HOME/.npmrc'"
+  echo "                        | Default: '\$HOME/.npmrc', where \$HOME could be the original home path or the sudo user home path, depending on the --UseOriginalHomePath parameter"
+  echo "  --UseOriginalHomePath | Use original home path for Chartman UI data directory, when script is used with sudo."
+  echo "                        | Default: '0'"
   echo "  --help                | Display help"
   exit
 fi
@@ -126,6 +138,8 @@ do
       ARG_CHARTMAN_UI_IMAGE_TAG="${arg}"
     elif [[ $keyName == '--chartmanuiports' ]]; then
       ARG_CHARTMAN_UI_PORTS="${arg}"
+    elif [[ $keyName == '--useoriginalhomepath' ]]; then
+      ARG_USE_ORIGINAL_HOME_PATH="${arg}"
     elif [[ $keyName == '--npmrcfile' ]]; then
       ARG_NPMRC_FILE="${arg}"
       if [ ! -f "$file_path" ]; then
@@ -144,6 +158,16 @@ do
     isKey=1
   fi
 done
+
+if [[ "$ARG_NPMRC_FILE" == "" ]]; then
+  ARG_NPMRC_FILE="$(getHome $ARG_USE_ORIGINAL_HOME_PATH)/.npmrc"
+  echo "Using default npmrc file: ${ARG_NPMRC_FILE}"
+fi
+
+if [[ "$ARG_CHARTMAN_HOME" == "" ]]; then
+  ARG_CHARTMAN_HOME="$(getHome $ARG_USE_ORIGINAL_HOME_PATH)/.chartman"
+  echo "Using default Chartman home directory: ${ARG_CHARTMAN_HOME}"
+fi
 
 if [ ! -f "$ARG_NPMRC_FILE" ]; then
     echo "@mhie-ds:registry=https://pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/
