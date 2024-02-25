@@ -82,7 +82,7 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "                        | Default: '/chartman-operator'"
   echo "  --NpmRcFile           | Path to .npmrc file"
   echo "                        | Default: '\$HOME/.npmrc', where \$HOME could be the original home path or the sudo user home path, depending on the --UseOriginalHomePath parameter"
-  echo "  --UseOriginalHomePath | Use original home path for Chartman UI data directory, when script is used with sudo."
+  echo "  --UseOriginalHomePath | Use original home path for Chartman UI data directory, when script is used with sudo. Use 1 if you want to use original home path, any other value otherwise."
   echo "                        | Default: '0'"
   echo "  --help                | Display help"
   exit
@@ -168,7 +168,7 @@ if [[ "$ARG_CHARTMAN_HOME" == "" ]]; then
   ARG_CHARTMAN_HOME="$(getHome $ARG_USE_ORIGINAL_HOME_PATH)/.chartman"
   echo "Using default Chartman home directory: ${ARG_CHARTMAN_HOME}"
 fi
-
+ba
 if [ ! -f "$ARG_NPMRC_FILE" ]; then
     echo "@mhie-ds:registry=https://pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/
 ; begin auth token
