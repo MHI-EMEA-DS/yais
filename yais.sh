@@ -168,7 +168,7 @@ if [[ "$ARG_CHARTMAN_HOME" == "" ]]; then
   ARG_CHARTMAN_HOME="$(getHome $ARG_USE_ORIGINAL_HOME_PATH)/.chartman"
   echo "Using default Chartman home directory: ${ARG_CHARTMAN_HOME}"
 fi
-ba
+
 if [ ! -f "$ARG_NPMRC_FILE" ]; then
     echo "@mhie-ds:registry=https://pkgs.dev.azure.com/MHIE/_packaging/NpmMhi/npm/registry/
 ; begin auth token
