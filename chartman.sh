@@ -144,7 +144,7 @@ dockerArgs=""
 if [ "$CHARTMAN_INTERACTIVE" = "1" ]; then dockerArgs="$dockerArgs -it"; fi
 
 # if nvidia docker runtime is installed, use it, to provide gpu info to charts
-if [ -f "/usr/bin/nvidia-container-runtime" ]; then
+if docker info | grep -qE "Runtime.*nvidia"; then
   dockerArgs="$dockerArgs --runtime=nvidia --gpus all"
 fi
 
