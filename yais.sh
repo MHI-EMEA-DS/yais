@@ -3,7 +3,8 @@
 getHome() {
   USE_ORIGINAL=$1
   if [[ "$USE_ORIGINAL" == "1" && -n "$SUDO_USER" ]]; then
-      echo $(getent passwd "$SUDO_USER" | awk -F: '{print $6}')
+      IFS=: read -ra ADDR <<< "$(getent passwd "$SUDO_USER")"
+      echo "${ADDR[5]}"
   else
       echo $HOME
   fi
