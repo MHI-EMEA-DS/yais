@@ -381,6 +381,7 @@ sleep 1
 runChartmanOperatorCommand () {
   COMMON_ARGS="-e DOCKER_REGISTRY=$ARG_DOCKER_REGISTRY_URL \
     -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
+    -e CHARTMAN_UI_BUILD_TIME=$current_time \
     -e DOCKER_PW=$ARG_DOCKER_REGISTRY_PASSWORD \
     -v "${ARG_MAIN_STACK_DIR}":"${ARG_MAIN_STACK_DIR}" \
     -v "${ARG_CHARTMAN_HOME}":"/app/data/.chartman" \
