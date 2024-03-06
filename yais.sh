@@ -86,8 +86,10 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "                        | Default: '\$HOME/.npmrc', where \$HOME could be the original home path or the sudo user home path, depending on the --UseOriginalHomePath parameter"
   echo "  --UseOriginalHomePath | Use original home path for Chartman UI data directory, when script is used with sudo. Use 1 if you want to use original home path, any other value otherwise."
   echo "                        | Default: '0'"
-  echo "  --MigrateChartmanHomeFromRoot | Migrate Chartman home directory from root to sudo user home directory. Use 1 if you want to migrate, any other value otherwise. It will be ignored if --UseOriginalHomePath is 0 or --ChartmanHome is provided."
-  echo "                        | Default: '0'"
+  echo "  --MigrateChartmanHomeFromRoot | Migrate Chartman home directory from root to sudo user home directory. Use 1 if you want to migrate, any other value otherwise. "
+  echo "                                | It will be ignored if --UseOriginalHomePath is 0 or --ChartmanHome is provided."
+  echo "                                | Be careful, it can overwrite the existing Chartman home directory in sudo user home directory."
+  echo "                                | Default: '0'"
   echo "  --help                | Display help"
   exit
 fi
