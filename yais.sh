@@ -179,9 +179,13 @@ if [[ "$ARG_CHARTMAN_HOME" == "" ]]; then
   if [[ "$ARG_USE_ORIGINAL_HOME_PATH" == "1" ]]; then
     if [[ "$ARG_MIGRATE_CHARTMAN_HOME_FROM_ROOT" == "1" ]]; then
       if [[ -n "$SUDO_USER" ]]; then  # if script is run with sudo
-        echo "Migrating Chartman home directory from $(getHome 0)/.chartman to $ARG_CHARTMAN_HOME home directory"
-        sudo cp -r "$(getHome 0)/.chartman" $ARG_CHARTMAN_HOME
-        sudo chown -R $SUDO_USER:$SUDO_USER $ARG_CHARTMAN_HOME
+        if [ -d "$(getHome 0)/.chartman" ]; then # if root home directory has .chartman directory
+          if [[ "$(getHome 0)" != "$(getHome 1)" ]]; then # if root home directory is different from sudo user home directory
+            echo "Migrating Chartman home directory from $(getHome 0)/.chartman to $ARG_CHARTMAN_HOME home directory"
+            sudo cp -r "$(getHome 0)/.chartman" $ARG_CHARTMAN_HOME
+            sudo chown -R $SUDO_USER:$SUDO_USER $ARG_CHARTMAN_HOME
+          fi
+        fi
       fi
     fi
   fi
