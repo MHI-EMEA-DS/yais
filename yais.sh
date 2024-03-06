@@ -30,6 +30,7 @@ ARG_CHARTMAN_UI_IMAGE=''
 ARG_CHARTMAN_UI_IMAGE_TAG=''
 ARG_NPMRC_FILE=""
 ARG_USE_ORIGINAL_HOME_PATH='0'
+ARG_MIGRATE_CHARTMAN_HOME_FROM_ROOT='0'
 
 current_time=$(date +"%Y-%m-%dT%H:%M:%S")
 stack_id=$(uuidgen)
@@ -84,6 +85,8 @@ if [[ "${1,,}" == "--help" ]]; then
   echo "  --NpmRcFile           | Path to .npmrc file"
   echo "                        | Default: '\$HOME/.npmrc', where \$HOME could be the original home path or the sudo user home path, depending on the --UseOriginalHomePath parameter"
   echo "  --UseOriginalHomePath | Use original home path for Chartman UI data directory, when script is used with sudo. Use 1 if you want to use original home path, any other value otherwise."
+  echo "                        | Default: '0'"
+  echo "  --MigrateChartmanHomeFromRoot | Migrate Chartman home directory from root to sudo user home directory. Use 1 if you want to migrate, any other value otherwise. It will be ignored if --UseOriginalHomePath is 0 or --ChartmanHome is provided."
   echo "                        | Default: '0'"
   echo "  --help                | Display help"
   exit
@@ -141,6 +144,8 @@ do
       ARG_CHARTMAN_UI_PORTS="${arg}"
     elif [[ $keyName == '--useoriginalhomepath' ]]; then
       ARG_USE_ORIGINAL_HOME_PATH="${arg}"
+    elif [[ $keyName == '--migratechartmanhomefromroot' ]]; then
+      ARG_MIGRATE_CHARTMAN_HOME_FROM_ROOT="${arg}"
     elif [[ $keyName == '--npmrcfile' ]]; then
       ARG_NPMRC_FILE="${arg}"
       if [ ! -f "$file_path" ]; then
@@ -160,6 +165,8 @@ do
   fi
 done
 
+
+
 if [[ "$ARG_NPMRC_FILE" == "" ]]; then
   ARG_NPMRC_FILE="$(getHome $ARG_USE_ORIGINAL_HOME_PATH)/.npmrc"
   echo "Using default npmrc file: ${ARG_NPMRC_FILE}"
@@ -168,6 +175,16 @@ fi
 if [[ "$ARG_CHARTMAN_HOME" == "" ]]; then
   ARG_CHARTMAN_HOME="$(getHome $ARG_USE_ORIGINAL_HOME_PATH)/.chartman"
   echo "Using default Chartman home directory: ${ARG_CHARTMAN_HOME}"
+
+  if [[ "$ARG_USE_ORIGINAL_HOME_PATH" == "1" ]]; then
+    if [[ "$ARG_MIGRATE_CHARTMAN_HOME_FROM_ROOT" == "1" ]]; then
+      if [[ -n "$SUDO_USER" ]]; then  # if script is run with sudo
+        echo "Migrating Chartman home directory from $(getHome 0)/.chartman to $ARG_CHARTMAN_HOME home directory"
+        sudo cp -r "$(getHome 0)/.chartman" $ARG_CHARTMAN_HOME
+        sudo chown -R $SUDO_USER:$SUDO_USER $ARG_CHARTMAN_HOME
+      fi
+    fi
+  fi
 fi
 
 if [ ! -f "$ARG_NPMRC_FILE" ]; then
