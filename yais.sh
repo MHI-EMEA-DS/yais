@@ -185,7 +185,7 @@ if [[ "$ARG_CHARTMAN_HOME" == "" ]]; then
           if [[ "$(getHome 0)" != "$(getHome 1)" ]]; then # if root home directory is different from sudo user home directory
             echo "Migrating Chartman home directory from $(getHome 0)/.chartman to $ARG_CHARTMAN_HOME home directory"
             mkdir -p $ARG_CHARTMAN_HOME
-            sudo cp -r $(getHome 0)/.chartman/* $ARG_CHARTMAN_HOME
+            sudo cp -a $(getHome 0)/.chartman/. $ARG_CHARTMAN_HOME
             sudo chown -R $SUDO_USER:$SUDO_USER $ARG_CHARTMAN_HOME
           fi
         fi
