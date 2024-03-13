@@ -184,7 +184,8 @@ if [[ "$ARG_CHARTMAN_HOME" == "" ]]; then
         if [ -d "$(getHome 0)/.chartman" ]; then # if root home directory has .chartman directory
           if [[ "$(getHome 0)" != "$(getHome 1)" ]]; then # if root home directory is different from sudo user home directory
             echo "Migrating Chartman home directory from $(getHome 0)/.chartman to $ARG_CHARTMAN_HOME home directory"
-            sudo cp -r "$(getHome 0)/.chartman" $ARG_CHARTMAN_HOME
+            mkdir -p $ARG_CHARTMAN_HOME
+            sudo cp -r "$(getHome 0)/.chartman/*" $ARG_CHARTMAN_HOME
             sudo chown -R $SUDO_USER:$SUDO_USER $ARG_CHARTMAN_HOME
           fi
         fi
@@ -431,7 +432,7 @@ runChartmanOperatorCommand () {
     -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
     -e DOCKER_PW=$ARG_DOCKER_REGISTRY_PASSWORD \
     -v "${ARG_MAIN_STACK_DIR}":"${ARG_MAIN_STACK_DIR}" \
-    -v "${ARG_CHARTMAN_HOME}":"/app/data/.chartman" \
+    -v "${ARG_CHARTMAN_HOME}":" " \
     -v "/var/run/docker.sock":"/var/run/docker.sock" \
     -v "${ARG_CHARTMAN_UI_DATA}/persistence":"/chartman-operator/data" \
     -v "${ARG_CHARTMAN_UI_DATA}/settings/config.json":"/wwwroot/config.json" \
