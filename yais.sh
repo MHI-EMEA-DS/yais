@@ -432,7 +432,7 @@ runChartmanOperatorCommand () {
     -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
     -e DOCKER_PW=$ARG_DOCKER_REGISTRY_PASSWORD \
     -v "${ARG_MAIN_STACK_DIR}":"${ARG_MAIN_STACK_DIR}" \
-    -v "${ARG_CHARTMAN_HOME}":" " \
+    -v "${ARG_CHARTMAN_HOME}":"/app/data/.chartman" \
     -v "/var/run/docker.sock":"/var/run/docker.sock" \
     -v "${ARG_CHARTMAN_UI_DATA}/persistence":"/chartman-operator/data" \
     -v "${ARG_CHARTMAN_UI_DATA}/settings/config.json":"/wwwroot/config.json" \
