@@ -27,12 +27,6 @@ getActiveDeploymentVersion() {
   fi
   pushd $SXS_DIR > /dev/null
 
-  chartman state
-  if [ $? -ne 0 ]; then
-      echo "Failed to get chartman state" >&2
-      exit 1
-  fi
-
   local chartmanState=$(chartman state)
 
   local activeDeployment=$(echo "$chartmanState" | jq -r '.activeDeployment')
@@ -40,14 +34,14 @@ getActiveDeploymentVersion() {
   if [ "$activeDeployment" == "null" ] || [ -z "$activeDeployment" ]; then
       echo "No active deployment found." >&2
       echo "$chartmanState" >&2
-      exit 1
+      return 1
   fi
 
   local version=$(echo "$chartmanState" | jq -r --arg activeDeployment "$activeDeployment" '.deployments[] | select(.id==$activeDeployment) | .version')
 
   if [ "$version" == "null" ] || [ -z "$version" ]; then
       echo "Version for the active deployment '$activeDeployment' not found." >&2
-      exit 1
+      return 1
   fi
 
   echo "$version"
@@ -55,6 +49,7 @@ getActiveDeploymentVersion() {
   popd > /dev/null
 }
 
+trap 'echo "An error occurred."; exit' ERR
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
