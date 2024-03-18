@@ -8,7 +8,6 @@ CHART_VERSION=""
 FORCE="false"
 CLEAN_UP_DESTINATION="false"
 CHART_NAME="sxs"
-CHART_VERSION=""
 
 showHelp() {
   echo "Usage: restore_persistence.sh -k <account-key> --chart-version <chart-version> [--destination /path/to/folder]  [-n <account-name>] [-c <container-name>] [--chart-version <version>] [--chart-name <chart-name>] [-f|--force]"
