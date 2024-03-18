@@ -57,7 +57,7 @@ getActiveDeploymentVersion() {
 
 # Define cleanup function
 cleanup() {
-  if ["$TEMP_FOLDER" != ""] && [ -d "$TEMP_FOLDER" ]; then
+  if [ "$TEMP_FOLDER" != "" ] && [ -d "$TEMP_FOLDER" ]; then
     echo "Removing temp dir $TEMP_FOLDER"
     rm -rf $TEMP_FOLDER
   fi
