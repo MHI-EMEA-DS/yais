@@ -90,11 +90,11 @@ fi
 if [ -z "$CHART_VERSION" ]; then
     echo "No chart version provided, trying to get it from chartman"
     CHART_VERSION=$(getActiveDeploymentVersion)
+    if [ -z "$CHART_VERSION" ]; then
+      echo "Failed to get chart version from chartman"
+      exit 1
+    fi
     echo "Chart version: $CHART_VERSION"
-fi
-if [ -z "$CHART_VERSION" ]; then
-    echo "Failed to get chart version from chartman"
-    exit 1
 fi
 ARCHIVE_NAME="${CHART_NAME}-${CHART_VERSION}.tar.gz"
 OVERWRITE_OPTION=""
