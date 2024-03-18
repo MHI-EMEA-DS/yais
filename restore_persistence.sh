@@ -1,8 +1,17 @@
 #!/bin/bash
 
 
+ACCOUNT_NAME="mhiemeapublic"
+CONTAINER_NAME="sxs-persistance-backups"
+DESTINATION_FOLDER="/mhi/sxs/__data"
+CHART_VERSION=""
+FORCE="false"
+CLEAN_UP_DESTINATION="false"
+CHART_NAME="sxs"
+CHART_VERSION=""
+
 showHelp() {
-  echo "Usage: restore_persistence.sh -k <account-key> -a <archive-name> [--destination /path/to/folder]  [-n <account-name>] [-c <container-name>] [--chart-version <version>] [--chart-name <chart-name>] [-f|--force]"
+  echo "Usage: restore_persistence.sh -k <account-key> --chart-version <chart-version> [--destination /path/to/folder]  [-n <account-name>] [-c <container-name>] [--chart-version <version>] [--chart-name <chart-name>] [-f|--force]"
   echo "  -k, --account-key: Azure Storage account key"
   echo "  -n, --account-name: Azure Storage account name, Default: mhiemeapublic"
   echo "  -c, --container-name: Azure Storage container name, Default: sxs-persistance-backups"
@@ -12,14 +21,6 @@ showHelp() {
   echo "  -f, --force: Force rewrite of the backup file"
   echo "  --clean-up-destination: Remove destination folder before restoring"
 }
-
-ACCOUNT_NAME="mhiemeapublic"
-CONTAINER_NAME="sxs-persistance-backups"
-DESTINATION_FOLDER="/__data"
-FORCE="false"
-CHART_NAME="sxs"
-CHART_VERSION=""
-CLEAN_UP_DESTINATION="false"
 
 # Parse named parameters
 while [[ "$#" -gt 0 ]]; do

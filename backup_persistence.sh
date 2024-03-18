@@ -2,7 +2,7 @@
 
 ACCOUNT_NAME="mhiemeapublic"
 CONTAINER_NAME="sxs-persistance-backups"
-FOLDER_NAME="/__data"
+FOLDER_NAME="/mhi/sxs/__data"
 FORCE="false"
 CHART_NAME="sxs"
 SXS_DIR="/mhi/sxs"
