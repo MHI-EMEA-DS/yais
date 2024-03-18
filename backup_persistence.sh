@@ -27,6 +27,12 @@ getActiveDeploymentVersion() {
   fi
   pushd $SXS_DIR > /dev/null
 
+  local chartmanState=$(chartman state 2>&1)
+  if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+      echo "Failed to get chartman state" >&2
+      echo "$chartmanState" >&2
+      return 1
+  fi
   local chartmanState=$(chartman state)
 
   local activeDeployment=$(echo "$chartmanState" | jq -r '.activeDeployment')
@@ -49,7 +55,15 @@ getActiveDeploymentVersion() {
   popd > /dev/null
 }
 
-trap 'echo "An error occurred."; exit' ERR
+# Define cleanup function
+cleanup() {
+  if ["$TEMP_FOLDER" != ""] && [ -d "$TEMP_FOLDER" ]; then
+    echo "Removing temp dir $TEMP_FOLDER"
+    rm -rf $TEMP_FOLDER
+  fi
+}
+
+trap cleanup EXIT
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -83,6 +97,7 @@ if [ -z "$CHART_VERSION" ]; then
     echo "Chart version: $CHART_VERSION"
 fi
 
+ARCHIVE_NAME="${CHART_NAME}-${CHART_VERSION}.tar.gz"
 OVERWRITE_OPTION=""
 # check if the file is already in the container
 if [ "$FORCE" == "false" ]; then
@@ -100,7 +115,6 @@ if [ "$FORCE" == "false" ]; then
       OVERWRITE_OPTION="--overwrite"
 fi
 
-ARCHIVE_NAME="${CHART_NAME}-${CHART_VERSION}.tar.gz"
 TEMP_FOLDER=$(mktemp -d)
 
 tar -czf $TEMP_FOLDER/$ARCHIVE_NAME -C $FOLDER_NAME .

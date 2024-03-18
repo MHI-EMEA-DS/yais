@@ -21,7 +21,17 @@ showHelp() {
   echo "  --clean-up-destination: Remove destination folder before restoring"
 }
 
-trap 'echo "An error occurred."; exit' ERR
+# Define cleanup function
+cleanup() {
+  echo "Cleaning up before exiting..."
+
+  if ["$TEMP_DIR" != ""] && [ -d "$TEMP_DIR" ]; then
+    echo "Removing temp dir $TEMP_DIR"
+    rm -rf $TEMP_DIR
+  fi
+}
+
+trap cleanup EXIT
 
 # Parse named parameters
 while [[ "$#" -gt 0 ]]; do
