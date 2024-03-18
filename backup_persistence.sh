@@ -22,8 +22,8 @@ showHelp() {
 
 getActiveDeploymentVersion() {
   if [ ! -d "$SXS_DIR" ]; then
-      echo "Folder /mhi/sxs does not exist. cannot determine active deployment version." >&2
-      exit 1
+      echo "Folder $SXS_DIR does not exist. cannot determine active deployment version." >&2
+      return 1
   fi
   pushd $SXS_DIR > /dev/null
 
