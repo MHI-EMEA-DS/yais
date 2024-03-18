@@ -25,7 +25,7 @@ showHelp() {
 cleanup() {
   echo "Cleaning up before exiting..."
 
-  if ["$TEMP_DIR" != ""] && [ -d "$TEMP_DIR" ]; then
+  if [ "$TEMP_DIR" != "" ] && [ -d "$TEMP_DIR" ]; then
     echo "Removing temp dir $TEMP_DIR"
     rm -rf $TEMP_DIR
   fi
