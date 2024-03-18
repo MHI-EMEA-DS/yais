@@ -90,7 +90,7 @@ fi
 if [ -z "$CHART_VERSION" ]; then
     echo "No chart version provided, trying to get it from chartman"
     CHART_VERSION=$(getActiveDeploymentVersion)
-    if [ $? -ne 0 ]; then
+    if [ $CHART_VERSION == "" ]; then
         echo "Failed to get chart version from chartman"
         exit 1
     fi
