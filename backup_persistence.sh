@@ -28,7 +28,7 @@ getActiveDeploymentVersion() {
   pushd $SXS_DIR > /dev/null
 
   chartman state
-  if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+  if [ $? -ne 0 ]; then
       echo "Failed to get chartman state" >&2
       return 1
   fi
