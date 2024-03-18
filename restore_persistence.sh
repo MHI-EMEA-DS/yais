@@ -21,6 +21,8 @@ showHelp() {
   echo "  --clean-up-destination: Remove destination folder before restoring"
 }
 
+trap 'echo "An error occurred."; exit' ERR
+
 # Parse named parameters
 while [[ "$#" -gt 0 ]]; do
     case $1 in
