@@ -90,13 +90,12 @@ fi
 if [ -z "$CHART_VERSION" ]; then
     echo "No chart version provided, trying to get it from chartman"
     CHART_VERSION=$(getActiveDeploymentVersion)
-    if [ $CHART_VERSION == "" ]; then
-        echo "Failed to get chart version from chartman"
-        exit 1
-    fi
     echo "Chart version: $CHART_VERSION"
 fi
-
+if [ $CHART_VERSION == "" ]; then
+    echo "Failed to get chart version from chartman"
+    exit 1
+fi
 ARCHIVE_NAME="${CHART_NAME}-${CHART_VERSION}.tar.gz"
 OVERWRITE_OPTION=""
 # check if the file is already in the container
