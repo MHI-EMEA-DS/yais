@@ -14,7 +14,7 @@ showHelp() {
   echo "  -k, --account-key: Azure Storage account key"
   echo "  -n, --account-name: Azure Storage account name, Default: mhiemeapublic"
   echo "  -c, --container-name: Azure Storage container name, Default: sxs-persistance-backups"
-  echo "  --destination: Destination folder, Default: /__data"
+  echo "  --destination: Destination folder, Default: /mhi/sxs/__data"
   echo "  --chart-name: Chart name (archive prefix), Default: sxs"
   echo "  --chart-version: Chart version, Default: trying to retrieve from chartman active version in /mhi/sxs"
   echo "  -f, --force: Force rewrite of the backup file"
