@@ -31,6 +31,7 @@ ARG_CHARTMAN_UI_IMAGE_TAG=''
 ARG_NPMRC_FILE=""
 ARG_USE_ORIGINAL_HOME_PATH='0'
 ARG_MIGRATE_CHARTMAN_HOME_FROM_ROOT='0'
+ARG_MIGRATE_CHARTMAN_STACKS='0'
 
 current_time=$(date +"%Y-%m-%dT%H:%M:%S")
 stack_id=$(uuidgen)
@@ -148,6 +149,8 @@ do
       ARG_USE_ORIGINAL_HOME_PATH="${arg}"
     elif [[ $keyName == '--migratechartmanhomefromroot' ]]; then
       ARG_MIGRATE_CHARTMAN_HOME_FROM_ROOT="${arg}"
+    elif [[ $keyName == '--migratechartmanstacks' ]]; then
+      ARG_MIGRATE_CHARTMAN_STACKS="${arg}"
     elif [[ $keyName == '--npmrcfile' ]]; then
       ARG_NPMRC_FILE="${arg}"
       if [ ! -f "$file_path" ]; then
@@ -367,35 +370,53 @@ fi
 echo "Preparing config files..."
 sleep 1
 
-if [ -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]; then
-  echo "Persistence file '${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' already exists."
-  echo "Checking values from current persistence file..."
-  stacks_json=$(cat "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json")
-  stack_name=$(echo $(echo "$stacks_json" |grep -o '"Name": "[^"]*' | sed 's/"Name": "//') | cut -d ' ' -f 1)
-  network=$(echo "$stacks_json" | grep -o '"Network": "[^"]*' | sed 's/"Network": "//')
-  working_dir=$(echo $(echo "$stacks_json" | grep -o '"WorkingDir": "[^"]*' | sed 's/"WorkingDir": "//') | cut -d ' ' -f 1)
-  if [[ ${ARG_MAIN_STACK_NAME} == "$stack_name" && ${ARG_MAIN_STACK_DIR} == "$working_dir" && ${ARG_MAIN_STACK_NETWORK} == "$network" ]]; then
-     echo "using stacks.json from ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
-  else
-     echo "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json contains values different from args"
-     echo "Error: provide the same stack name -- ${stack_name}, working dir -- ${working_dir}, network -- ${network} or remove ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
-     exit
+runChartmanOperatorCommand () {
+  COMMON_ARGS="-e DOCKER_REGISTRY=$ARG_DOCKER_REGISTRY_URL \
+    -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
+    -e START_TIME=$current_time \
+    -e DOCKER_PW=$ARG_DOCKER_REGISTRY_PASSWORD \
+    -v "${ARG_MAIN_STACK_DIR}":"${ARG_MAIN_STACK_DIR}" \
+    -v "${ARG_CHARTMAN_HOME}":"/app/data/.chartman" \
+    -v "/var/run/docker.sock":"/var/run/docker.sock" \
+    -v "${ARG_CHARTMAN_UI_DATA}/persistence":"/chartman-operator/data" \
+    -v "${ARG_CHARTMAN_UI_DATA}/settings/config.json":"/wwwroot/config.json" \
+    $ARG_CHARTMAN_UI_IMAGE:$ARG_CHARTMAN_UI_IMAGE_TAG"
+
+  if [ $1 == "set-user" ]; then
+    ARGS="--rm $COMMON_ARGS set-user -u $ARG_CHARTMAN_UI_USER -p $ARG_CHARTMAN_UI_PASSWORD"
+  elif [ $1 == "chartman" ]; then
+    ARGS="--rm --entrypoint chartman $COMMON_ARGS ${@:2}"
+  elif [ $1 == "server" ]; then
+    if [ -n "$ARG_CHARTMAN_UI_PORTS" ]; then
+      PORT_MAPPING=""
+      PUBLIC_PORTS_ASSIGNMENT="$ARG_CHARTMAN_UI_PORTS"
+      IFS=',' read -ra parts <<< "$ARG_CHARTMAN_UI_PORTS"
+          for part in "${parts[@]}"; do
+            PORT_MAPPING="$PORT_MAPPING -p $part:80"
+          done
+    else
+      PORT_MAPPING="-p 127.0.0.1:$ARG_CHARTMAN_UI_PORT:80"
+      PUBLIC_PORTS_ASSIGNMENT="127.0.0.1:$ARG_CHARTMAN_UI_PORT"
+    fi
+
+    ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER $PORT_MAPPING -e PUBLIC_PORTS_ASSIGNMENT=$PUBLIC_PORTS_ASSIGNMENT -v $ARG_NPMRC_FILE:/root/.npmrc $COMMON_ARGS server"
   fi
-else
-  persistence_template="[
-    {
-      \"Id\": \"${stack_id}\",
-      \"Name\": \"${ARG_MAIN_STACK_NAME}\",
-      \"Network\": \"${ARG_MAIN_STACK_NETWORK}\",
-      \"WorkingDir\": \"${ARG_MAIN_STACK_DIR}\",
-      \"CreatedAt\": \"${current_time}\",
-      \"UpdatedAt\": \"${current_time}\",
-      \"Services\": []
-    }
-  ]"
-  echo "${persistence_template}" > "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json"
-  echo "'${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json' file created"
+
+  response=`docker run $ARGS 2>&1`
+}
+
+runChartmanOperatorCommand "chartman" "stacks ls --json"
+stacks_json=$(echo "$response" | sed '/^[[:space:]]*\[INFO\]/d')
+
+if [[ "$ARG_MIGRATE_CHARTMAN_STACKS" == "1" && -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]]; then
+  echo "Copying file ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json to $ARG_CHARTMAN_HOME/stacks.json"
+  cp "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" $ARG_CHARTMAN_HOME/stacks.json
 fi
+
+if [[ ! $stacks_json == *"$ARG_MAIN_STACK_NAME"* ]]; then
+ runChartmanOperatorCommand "chartman" "stacks create ${ARG_MAIN_STACK_NAME} --workingDir ${ARG_MAIN_STACK_DIR} --network ${ARG_MAIN_STACK_NETWORK}"
+fi
+
 sleep 1
 
 if [[ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]]; then
@@ -422,43 +443,6 @@ config_template="{
 echo "${config_template}" > "${ARG_CHARTMAN_UI_DATA}/settings/config.json"
 echo "'${ARG_CHARTMAN_UI_DATA}/settings/config.json' file created"
 sleep 1
-
-# --------------------------
-# Function for checking user
-# --------------------------
-
-runChartmanOperatorCommand () {
-  COMMON_ARGS="-e DOCKER_REGISTRY=$ARG_DOCKER_REGISTRY_URL \
-    -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
-    -e START_TIME=$current_time \
-    -e DOCKER_PW=$ARG_DOCKER_REGISTRY_PASSWORD \
-    -v "${ARG_MAIN_STACK_DIR}":"${ARG_MAIN_STACK_DIR}" \
-    -v "${ARG_CHARTMAN_HOME}":"/app/data/.chartman" \
-    -v "/var/run/docker.sock":"/var/run/docker.sock" \
-    -v "${ARG_CHARTMAN_UI_DATA}/persistence":"/chartman-operator/data" \
-    -v "${ARG_CHARTMAN_UI_DATA}/settings/config.json":"/wwwroot/config.json" \
-    $ARG_CHARTMAN_UI_IMAGE:$ARG_CHARTMAN_UI_IMAGE_TAG"
-
-  if [ $1  == "set-user" ]; then
-    ARGS="--rm $COMMON_ARGS set-user -u $ARG_CHARTMAN_UI_USER -p $ARG_CHARTMAN_UI_PASSWORD"
-  elif [ $1 == "server" ]; then
-    if [ -n "$ARG_CHARTMAN_UI_PORTS" ]; then
-      PORT_MAPPING=""
-      PUBLIC_PORTS_ASSIGNMENT="$ARG_CHARTMAN_UI_PORTS"
-      IFS=',' read -ra parts <<< "$ARG_CHARTMAN_UI_PORTS"
-          for part in "${parts[@]}"; do
-            PORT_MAPPING="$PORT_MAPPING -p $part:80"
-          done
-    else
-      PORT_MAPPING="-p 127.0.0.1:$ARG_CHARTMAN_UI_PORT:80"
-      PUBLIC_PORTS_ASSIGNMENT="127.0.0.1:$ARG_CHARTMAN_UI_PORT"
-    fi
-
-    ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER $PORT_MAPPING -e PUBLIC_PORTS_ASSIGNMENT=$PUBLIC_PORTS_ASSIGNMENT -v $ARG_NPMRC_FILE:/root/.npmrc $COMMON_ARGS server"
-  fi
-
-  docker run $ARGS
-}
 
 # -------------------
 # Run docker commands
