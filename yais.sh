@@ -370,6 +370,31 @@ fi
 echo "Preparing config files..."
 sleep 1
 
+if [[ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]]; then
+  echo "Settings file already exists."
+  backup_time=$(date +"%Y%m%d%H%M%S")
+  backup_file="config_bcp_${backup_time}.json"
+  echo "Creating backup file for existing configuration: ${backup_file}"
+  sleep 1
+
+  cp "${ARG_CHARTMAN_UI_DATA}/settings/config.json" "${ARG_CHARTMAN_UI_DATA}/settings/${backup_file}"
+fi
+
+config_hostname=""
+
+config_template="{
+  \"Hostname\": \"${config_hostname}\",
+  \"Port\": ${ARG_CHARTMAN_UI_PORT},
+  \"CrossNavigationUrl\": \"n/a\",
+  \"Protocol\": \"http\",
+  \"Prefix\": \"\",
+  \"LogLevel\": \"warning\"
+}"
+
+echo "${config_template}" > "${ARG_CHARTMAN_UI_DATA}/settings/config.json"
+echo "'${ARG_CHARTMAN_UI_DATA}/settings/config.json' file created"
+sleep 1
+
 runChartmanOperatorCommand () {
   COMMON_ARGS="-e DOCKER_REGISTRY=$ARG_DOCKER_REGISTRY_URL \
     -e DOCKER_USER=$ARG_DOCKER_REGISTRY_USER \
@@ -402,7 +427,7 @@ runChartmanOperatorCommand () {
     ARGS="-d --restart unless-stopped --name $ARG_CHARTMAN_UI_CONTAINER $PORT_MAPPING -e PUBLIC_PORTS_ASSIGNMENT=$PUBLIC_PORTS_ASSIGNMENT -v $ARG_NPMRC_FILE:/root/.npmrc $COMMON_ARGS server"
   fi
 
-  response=`docker run $ARGS 2>&1`
+  response=$(docker run $ARGS)
 }
 
 runChartmanOperatorCommand "chartman" "stacks ls --json"
@@ -417,31 +442,6 @@ if [[ ! $stacks_json == *"$ARG_MAIN_STACK_NAME"* ]]; then
  runChartmanOperatorCommand "chartman" "stacks create ${ARG_MAIN_STACK_NAME} --workingDir ${ARG_MAIN_STACK_DIR} --network ${ARG_MAIN_STACK_NETWORK}"
 fi
 
-sleep 1
-
-if [[ -f "${ARG_CHARTMAN_UI_DATA}/settings/config.json" ]]; then
-  echo "Settings file already exists."
-  backup_time=$(date +"%Y%m%d%H%M%S")
-  backup_file="config_bcp_${backup_time}.json"
-  echo "Creating backup file for existing configuration: ${backup_file}"
-  sleep 1
-
-  cp "${ARG_CHARTMAN_UI_DATA}/settings/config.json" "${ARG_CHARTMAN_UI_DATA}/settings/${backup_file}"
-fi
-
-config_hostname=""
-
-config_template="{
-  \"Hostname\": \"${config_hostname}\",
-  \"Port\": ${ARG_CHARTMAN_UI_PORT},
-  \"CrossNavigationUrl\": \"n/a\",
-  \"Protocol\": \"http\",
-  \"Prefix\": \"\",
-  \"LogLevel\": \"warning\"
-}"
-
-echo "${config_template}" > "${ARG_CHARTMAN_UI_DATA}/settings/config.json"
-echo "'${ARG_CHARTMAN_UI_DATA}/settings/config.json' file created"
 sleep 1
 
 # -------------------
