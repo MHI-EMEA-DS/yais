@@ -430,13 +430,13 @@ runChartmanOperatorCommand () {
   response=$(docker run $ARGS)
 }
 
-runChartmanOperatorCommand "chartman" "stacks ls --json"
-stacks_json=$(echo "$response" | sed '/^[[:space:]]*\[INFO\]/d')
-
 if [[ "$ARG_MIGRATE_CHARTMAN_STACKS" == "1" && -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]]; then
   echo "Copying file ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json to $ARG_CHARTMAN_HOME/stacks.json"
   cp "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" $ARG_CHARTMAN_HOME/stacks.json
 fi
+
+runChartmanOperatorCommand "chartman" "stacks ls --json"
+stacks_json=$(echo "$response" | sed '/^[[:space:]]*\[INFO\]/d')
 
 if [[ ! $stacks_json == *"$ARG_MAIN_STACK_NAME"* ]]; then
  runChartmanOperatorCommand "chartman" "stacks create ${ARG_MAIN_STACK_NAME} --workingDir ${ARG_MAIN_STACK_DIR} --network ${ARG_MAIN_STACK_NETWORK}"
