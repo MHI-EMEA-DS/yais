@@ -432,7 +432,17 @@ runChartmanOperatorCommand () {
 
 if [[ "$ARG_MIGRATE_CHARTMAN_STACKS" == "1" && -f "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" ]]; then
   echo "Copying file ${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json to $ARG_CHARTMAN_HOME/stacks.json"
-  cp "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" $ARG_CHARTMAN_HOME/stacks.json
+
+  jq_function='def downcase_first:
+  if length > 0 then
+    (.[:1] | ascii_downcase) + .[1:]
+  else
+    .
+  end;
+'
+
+  # Convert property names from "ThisIsMyProperty" to "thisIsMyProperty"
+  jq "$jq_function"'walk(if type == "object" then with_entries(.key |= downcase_first) else . end)' "${ARG_CHARTMAN_UI_DATA}/persistence/stacks.json" > "$ARG_CHARTMAN_HOME/stacks.json"
 fi
 
 runChartmanOperatorCommand "chartman" "stacks ls --json"
